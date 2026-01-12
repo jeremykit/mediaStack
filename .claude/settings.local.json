@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(if [ -d \"docs\" ])",
+      "Bash(then ls -la docs)",
+      "Bash(else echo \"docs directory does not exist\")",
+      "Bash(fi:*)",
+      "WebFetch(domain:github.com)",
+      "WebSearch"
+    ]
+  }
+}
