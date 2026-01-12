@@ -6,7 +6,8 @@
       "Bash(else echo \"docs directory does not exist\")",
       "Bash(fi:*)",
       "WebFetch(domain:github.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git remote:*)"
     ]
   }
 }
