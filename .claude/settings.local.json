@@ -19,7 +19,8 @@
       "Bash(pip3 install:*)",
       "Bash(python3 -m pip install:*)",
       "Bash(python:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npx vue-tsc:*)"
     ]
   }
 }

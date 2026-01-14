@@ -73,8 +73,10 @@ class RecorderService:
                 _, stderr = await process.communicate()
                 del cls._processes[task_id]
 
-                if process.returncode == 0 or process.returncode == 255:
+                if process.returncode == 0:
                     task.status = TaskStatus.completed
+                elif process.returncode == 255:
+                    task.status = TaskStatus.interrupted
                 else:
                     task.status = TaskStatus.failed
                     task.error_message = stderr.decode()[-500:]
@@ -113,6 +115,11 @@ class RecorderService:
         process = cls._processes.get(task_id)
         if process:
             process.terminate()
+            try:
+                await asyncio.wait_for(process.wait(), timeout=5.0)
+            except asyncio.TimeoutError:
+                process.kill()
+                await process.wait()
         return task
 
     @classmethod
@@ -127,7 +134,7 @@ class RecorderService:
             process = await asyncio.create_subprocess_exec(
                 *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
-            stdout, _ = await process.communicate()
+            stdout, _ = await asyncio.wait_for(process.communicate(), timeout=10.0)
             return int(float(stdout.decode().strip()))
-        except:
+        except (asyncio.TimeoutError, ValueError, OSError):
             return None
