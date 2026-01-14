@@ -22,11 +22,25 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="280" fixed="right">
+      <el-table-column label="操作" width="380" fixed="right">
         <template #default="{ row }">
           <el-button size="small" @click="handleCheckStatus(row)" :loading="row.checking">
             检测状态
           </el-button>
+          <el-button
+            v-if="!row.recording"
+            size="small"
+            type="success"
+            @click="handleStartRecording(row)"
+            :loading="row.starting"
+          >开始录制</el-button>
+          <el-button
+            v-else
+            size="small"
+            type="danger"
+            @click="handleStopRecording(row)"
+            :loading="row.stopping"
+          >停止录制</el-button>
           <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
@@ -41,9 +55,10 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { sourcesApi, type Source } from '../../api/sources'
+import { tasksApi } from '../../api/tasks'
 import SourceForm from '../../components/SourceForm.vue'
 
-const sources = ref<(Source & { checking?: boolean })[]>([])
+const sources = ref<(Source & { checking?: boolean; recording?: boolean; starting?: boolean; stopping?: boolean })[]>([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentSource = ref<Source | null>(null)
@@ -95,6 +110,32 @@ const handleCheckStatus = async (row: Source & { checking?: boolean }) => {
     ElMessage.error('检测失败')
   } finally {
     row.checking = false
+  }
+}
+
+const handleStartRecording = async (row: Source & { starting?: boolean; recording?: boolean }) => {
+  row.starting = true
+  try {
+    await tasksApi.startRecording(row.id)
+    row.recording = true
+    ElMessage.success('已开始录制')
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.detail || '启动失败')
+  } finally {
+    row.starting = false
+  }
+}
+
+const handleStopRecording = async (row: Source & { stopping?: boolean; recording?: boolean }) => {
+  row.stopping = true
+  try {
+    await tasksApi.stopRecording(row.id)
+    row.recording = false
+    ElMessage.success('已停止录制')
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.detail || '停止失败')
+  } finally {
+    row.stopping = false
   }
 }
 
