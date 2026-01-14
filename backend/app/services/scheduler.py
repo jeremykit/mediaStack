@@ -1,7 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select
 
 from app.config import settings
@@ -12,8 +12,10 @@ scheduler: AsyncIOScheduler = None
 def get_scheduler() -> AsyncIOScheduler:
     global scheduler
     if scheduler is None:
+        # SQLAlchemyJobStore requires sync URL
+        sync_db_url = str(settings.database_url).replace('+aiosqlite', '').replace('sqlite+aiosqlite', 'sqlite')
         jobstores = {
-            'default': SQLAlchemyJobStore(url=settings.database_url.replace('+aiosqlite', ''))
+            'default': SQLAlchemyJobStore(url=sync_db_url)
         }
         scheduler = AsyncIOScheduler(jobstores=jobstores)
     return scheduler
@@ -41,10 +43,10 @@ async def scheduled_recording_job(schedule_id: int):
 
         try:
             await RecorderService.start_recording(schedule.source_id, db)
-            schedule.last_run_at = datetime.utcnow()
+            schedule.last_run_at = datetime.now(timezone.utc)
             await db.commit()
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Scheduled recording failed for schedule {schedule_id}: {e}")
 
 
 def add_schedule_job(schedule_id: int, cron_expr: str):
