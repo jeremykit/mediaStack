@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.database import init_db, async_session
-from app.api import auth, sources, tasks, schedules, videos
+from app.api import auth, sources, tasks, schedules, videos, system
 from app.services.scheduler import init_scheduler, shutdown_scheduler
 from app.init_admin import create_initial_admin
 
@@ -45,3 +45,4 @@ app.include_router(sources.router)
 app.include_router(tasks.router)
 app.include_router(schedules.router)
 app.include_router(videos.router)
+app.include_router(system.router)
