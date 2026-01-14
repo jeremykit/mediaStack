@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from typing import List, Optional
 import os
 
@@ -58,18 +58,29 @@ async def delete_video(
     db: AsyncSession = Depends(get_db),
     current_user: Admin = Depends(get_current_user)
 ):
+    """Delete video and file (admin only)."""
     result = await db.execute(select(VideoFile).where(VideoFile.id == video_id))
     video = result.scalar_one_or_none()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.file_path and os.path.exists(video.file_path):
-        os.remove(video.file_path)
-    if video.thumbnail and os.path.exists(video.thumbnail):
-        os.remove(video.thumbnail)
+    file_path = video.file_path
+    thumbnail_path = video.thumbnail
 
     await db.delete(video)
     await db.commit()
+
+    try:
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
+    except OSError:
+        pass
+
+    try:
+        if thumbnail_path and os.path.exists(thumbnail_path):
+            os.remove(thumbnail_path)
+    except OSError:
+        pass
 
 @router.get("/{video_id}/play", response_model=VideoPlayResponse)
 async def get_play_url(video_id: int, db: AsyncSession = Depends(get_db)):
@@ -83,11 +94,16 @@ async def get_play_url(video_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/{video_id}/view")
 async def increment_view(video_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(VideoFile).where(VideoFile.id == video_id))
-    video = result.scalar_one_or_none()
-    if not video:
+    """Increment view count (public endpoint)."""
+    result = await db.execute(
+        update(VideoFile)
+        .where(VideoFile.id == video_id)
+        .values(view_count=VideoFile.view_count + 1)
+        .returning(VideoFile.view_count)
+    )
+    row = result.first()
+    if not row:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    video.view_count += 1
     await db.commit()
-    return {"view_count": video.view_count}
+    return {"view_count": row[0]}
