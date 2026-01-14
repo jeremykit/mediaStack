@@ -1,3 +1,3 @@
-from app.api import auth, sources, tasks, schedules
+from app.api import auth, sources, tasks, schedules, videos
 
-__all__ = ["auth", "sources", "tasks", "schedules"]
+__all__ = ["auth", "sources", "tasks", "schedules", "videos"]
