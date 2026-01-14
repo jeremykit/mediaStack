@@ -21,8 +21,10 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str = "admin123"
 
-    class Config:
-        env_file = ".env"
+    # CORS
+    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+
+    model_config = {"env_file": ".env"}
 
 
 settings = Settings()
