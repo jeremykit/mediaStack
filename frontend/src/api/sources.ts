@@ -1,0 +1,42 @@
+import api from './index'
+
+export interface Source {
+  id: number
+  name: string
+  protocol: 'rtmp' | 'hls'
+  url: string
+  retention_days: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SourceCreate {
+  name: string
+  protocol: 'rtmp' | 'hls'
+  url: string
+  retention_days?: number
+  is_active?: boolean
+}
+
+export interface SourceUpdate {
+  name?: string
+  protocol?: 'rtmp' | 'hls'
+  url?: string
+  retention_days?: number
+  is_active?: boolean
+}
+
+export interface SourceStatus {
+  online: boolean
+  message: string
+}
+
+export const sourcesApi = {
+  list: () => api.get<Source[]>('/sources'),
+  get: (id: number) => api.get<Source>(`/sources/${id}`),
+  create: (data: SourceCreate) => api.post<Source>('/sources', data),
+  update: (id: number, data: SourceUpdate) => api.put<Source>(`/sources/${id}`, data),
+  delete: (id: number) => api.delete(`/sources/${id}`),
+  checkStatus: (id: number) => api.get<SourceStatus>(`/sources/${id}/status`)
+}
