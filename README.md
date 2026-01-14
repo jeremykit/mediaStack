@@ -27,6 +27,26 @@ npm run dev
 ```
 
 ## 部署
+
+### 生产环境部署
+
+1. 构建前端
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
+
+2. 配置环境变量
+```bash
+cp .env.example .env
+# 编辑 .env 设置安全的密钥和密码
+```
+
+3. 启动服务
 ```bash
 docker-compose up -d
 ```
+
+4. 访问 http://localhost
