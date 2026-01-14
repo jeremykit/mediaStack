@@ -7,7 +7,13 @@
       "Bash(fi:*)",
       "WebFetch(domain:github.com)",
       "WebSearch",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Skill(superpowers:brainstorming)",
+      "Bash(git -C /home/jeremy/codes/github/mediaStack log --oneline -5)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Skill(superpowers:writing-plans)"
     ]
   }
 }
