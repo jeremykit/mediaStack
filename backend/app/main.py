@@ -3,12 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.config import settings
+from app.database import init_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     settings.storage_path.mkdir(parents=True, exist_ok=True)
+    await init_db()
     yield
     # Shutdown
 
