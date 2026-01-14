@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.config import settings
-from app.database import init_db
+from app.database import init_db, async_session
+from app.api import auth
+from app.init_admin import create_initial_admin
 
 
 @asynccontextmanager
@@ -11,6 +13,8 @@ async def lifespan(app: FastAPI):
     # Startup
     settings.storage_path.mkdir(parents=True, exist_ok=True)
     await init_db()
+    async with async_session() as db:
+        await create_initial_admin(db)
     yield
     # Shutdown
 
@@ -32,3 +36,5 @@ app.add_middleware(
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok"}
+
+app.include_router(auth.router)

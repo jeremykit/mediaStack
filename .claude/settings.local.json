@@ -17,7 +17,9 @@
       "Skill(superpowers:subagent-driven-development)",
       "Bash(pip install:*)",
       "Bash(pip3 install:*)",
-      "Bash(python3 -m pip install:*)"
+      "Bash(python3 -m pip install:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)"
     ]
   }
 }
