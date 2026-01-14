@@ -29,12 +29,20 @@ const loading = ref(false)
 
 const loadVideo = async () => {
   const id = Number(route.params.id)
+  if (isNaN(id)) {
+    console.error('Invalid video ID')
+    return
+  }
+
   loading.value = true
   try {
-    const [videoRes, playRes] = await Promise.all([videosApi.get(id), videosApi.getPlayUrl(id)])
+    const videoRes = await videosApi.get(id)
     video.value = videoRes.data
+
+    const playRes = await videosApi.getPlayUrl(id)
     playUrl.value = playRes.data.hls_url
-    videosApi.incrementView(id)
+
+    videosApi.incrementView(id).catch(() => {})
   } catch (e) {
     console.error('Failed to load video', e)
   } finally {
