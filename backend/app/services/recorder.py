@@ -120,6 +120,8 @@ class RecorderService:
             except asyncio.TimeoutError:
                 process.kill()
                 await process.wait()
+            except ProcessLookupError:
+                pass  # Process already exited
         return task
 
     @classmethod
