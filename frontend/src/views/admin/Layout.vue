@@ -19,14 +19,20 @@
         </el-menu-item>
       </el-menu>
     </el-aside>
-    <el-main>
-      <router-view />
-    </el-main>
+    <el-container>
+      <el-header class="admin-header">
+        <SystemStatus />
+      </el-header>
+      <el-main>
+        <router-view />
+      </el-main>
+    </el-container>
   </el-container>
 </template>
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
+import SystemStatus from '../../components/SystemStatus.vue'
 const route = useRoute()
 </script>
 
@@ -48,5 +54,12 @@ const route = useRoute()
 .el-menu-item.is-active {
   background: #263445 !important;
   color: #409eff;
+}
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: #304156;
+  border-bottom: 1px solid #263445;
 }
 </style>
