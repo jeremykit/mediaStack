@@ -4,7 +4,8 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.database import init_db, async_session
-from app.api import auth, sources, tasks
+from app.api import auth, sources, tasks, schedules
+from app.services.scheduler import init_scheduler, shutdown_scheduler
 from app.init_admin import create_initial_admin
 
 
@@ -15,8 +16,10 @@ async def lifespan(app: FastAPI):
     await init_db()
     async with async_session() as db:
         await create_initial_admin(db)
+    await init_scheduler()
     yield
     # Shutdown
+    shutdown_scheduler()
 
 
 app = FastAPI(
@@ -40,3 +43,4 @@ async def health_check():
 app.include_router(auth.router)
 app.include_router(sources.router)
 app.include_router(tasks.router)
+app.include_router(schedules.router)
