@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.database import init_db, async_session
-from app.api import auth
+from app.api import auth, sources
 from app.init_admin import create_initial_admin
 
 
@@ -38,3 +38,4 @@ async def health_check():
     return {"status": "ok"}
 
 app.include_router(auth.router)
+app.include_router(sources.router)

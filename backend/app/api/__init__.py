@@ -1,3 +1,3 @@
-from app.api import auth
+from app.api import auth, sources
 
-__all__ = ["auth"]
+__all__ = ["auth", "sources"]
