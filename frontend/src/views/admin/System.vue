@@ -27,11 +27,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { systemApi, type SystemStatus } from '../../api/system'
 
 const status = ref<SystemStatus | null>(null)
 const loading = ref(false)
+let refreshTimer: ReturnType<typeof setInterval> | null = null
 
 const loadStatus = async () => {
   loading.value = true
@@ -59,7 +60,17 @@ const formatSize = (bytes: number) => {
   return `${size.toFixed(1)} ${units[i]}`
 }
 
-onMounted(loadStatus)
+onMounted(() => {
+  loadStatus()
+  refreshTimer = setInterval(loadStatus, 30000)
+})
+
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+    refreshTimer = null
+  }
+})
 </script>
 
 <style scoped>

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../stores/auth'
 
 const api = axios.create({
@@ -21,6 +22,10 @@ api.interceptors.response.use(
       const auth = useAuthStore()
       auth.logout()
       window.location.href = '/login'
+    } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      ElMessage.error('请求超时，请检查网络连接')
+    } else if (!error.response) {
+      ElMessage.error('网络连接失败，请检查网络设置')
     }
     return Promise.reject(error)
   }

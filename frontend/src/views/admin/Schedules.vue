@@ -8,9 +8,13 @@
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="source_name" label="直播源" />
       <el-table-column prop="cron_expr" label="Cron 表达式" width="150" />
-      <el-table-column prop="is_active" label="状态" width="80">
+      <el-table-column prop="is_active" label="状态" width="100">
         <template #default="{ row }">
-          <el-tag :type="row.is_active ? 'success' : 'info'">{{ row.is_active ? '启用' : '禁用' }}</el-tag>
+          <el-switch
+            v-model="row.is_active"
+            :loading="row._switching"
+            @change="handleToggleActive(row)"
+          />
         </template>
       </el-table-column>
       <el-table-column prop="last_run_at" label="上次执行" width="180">
@@ -50,6 +54,19 @@ const loadSchedules = async () => {
 
 const handleAdd = () => { currentSchedule.value = null; formVisible.value = true }
 const handleEdit = (row: Schedule) => { currentSchedule.value = row; formVisible.value = true }
+
+const handleToggleActive = async (row: Schedule & { _switching?: boolean }) => {
+  row._switching = true
+  try {
+    await schedulesApi.update(row.id, { is_active: row.is_active })
+    ElMessage.success(row.is_active ? '已启用' : '已禁用')
+  } catch (e: any) {
+    row.is_active = !row.is_active
+    ElMessage.error(e.response?.data?.detail || '操作失败')
+  } finally {
+    row._switching = false
+  }
+}
 
 const handleDelete = async (row: Schedule) => {
   try {

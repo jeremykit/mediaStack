@@ -85,7 +85,7 @@ async def delete_source(
         )
     )
     if active_task.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Cannot delete source with active recording")
+        raise HTTPException(status_code=400, detail="无法删除正在录制的直播源")
 
     await db.delete(source)
     await db.commit()

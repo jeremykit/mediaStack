@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from app.config import settings
 from app.database import init_db, async_session
@@ -12,7 +13,13 @@ from app.init_admin import create_initial_admin
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    # Create necessary directories
     settings.storage_path.mkdir(parents=True, exist_ok=True)
+
+    # Create database directory
+    db_path = Path(settings.database_url.replace("sqlite+aiosqlite:///", ""))
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
     await init_db()
     async with async_session() as db:
         await create_initial_admin(db)
