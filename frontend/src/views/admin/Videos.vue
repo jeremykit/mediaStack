@@ -2,35 +2,113 @@
   <div class="videos-page">
     <div class="page-header"><h2>视频管理</h2></div>
     <el-table :data="videos" v-loading="loading" stripe>
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="title" label="标题" show-overflow-tooltip />
-      <el-table-column prop="duration" label="时长" width="100">
+      <el-table-column prop="id" label="ID" width="60" />
+      <el-table-column prop="title" label="标题" show-overflow-tooltip min-width="150" />
+      <el-table-column label="分类" width="120">
+        <template #default="{ row }">
+          <el-tag v-if="row.category" size="small">{{ row.category.name }}</el-tag>
+          <span v-else class="text-muted">-</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="标签" min-width="150">
+        <template #default="{ row }">
+          <el-tag
+            v-for="tag in row.tags"
+            :key="tag.id"
+            size="small"
+            type="info"
+            style="margin-right: 4px"
+          >
+            {{ tag.name }}
+          </el-tag>
+          <span v-if="!row.tags || row.tags.length === 0" class="text-muted">-</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="file_type" label="类型" width="80">
+        <template #default="{ row }">
+          <el-tag :type="row.file_type === 'video' ? 'primary' : 'success'" size="small">
+            {{ row.file_type === 'video' ? '视频' : '音频' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="duration" label="时长" width="80">
         <template #default="{ row }">{{ formatDuration(row.duration) }}</template>
       </el-table-column>
-      <el-table-column prop="file_size" label="大小" width="100">
+      <el-table-column prop="file_size" label="大小" width="80">
         <template #default="{ row }">{{ formatSize(row.file_size) }}</template>
       </el-table-column>
-      <el-table-column prop="view_count" label="观看" width="80" />
-      <el-table-column prop="created_at" label="创建时间" width="180">
+      <el-table-column prop="view_count" label="观看" width="60" />
+      <el-table-column prop="created_at" label="创建时间" width="160">
         <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="150" fixed="right">
+      <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
           <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- Edit Dialog -->
+    <el-dialog v-model="showEditDialog" title="编辑视频" width="500px">
+      <el-form :model="editForm" label-width="80px">
+        <el-form-item label="标题">
+          <el-input v-model="editForm.title" />
+        </el-form-item>
+        <el-form-item label="分类">
+          <el-select v-model="editForm.category_id" placeholder="选择分类" clearable style="width: 100%">
+            <el-option
+              v-for="cat in categories"
+              :key="cat.id"
+              :label="cat.name"
+              :value="cat.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="标签">
+          <el-select
+            v-model="editForm.tag_ids"
+            multiple
+            placeholder="选择标签"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="tag in tags"
+              :key="tag.id"
+              :label="tag.name"
+              :value="tag.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveEdit" :loading="saving">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { videosApi, type Video } from '../../api/videos'
+import { categoriesApi, type Category } from '../../api/categories'
+import { tagsApi, type Tag } from '../../api/tags'
 
 const videos = ref<Video[]>([])
+const categories = ref<Category[]>([])
+const tags = ref<Tag[]>([])
 const loading = ref(false)
+const showEditDialog = ref(false)
+const saving = ref(false)
+const editingVideo = ref<Video | null>(null)
+
+const editForm = reactive({
+  title: '',
+  category_id: null as number | null,
+  tag_ids: [] as number[]
+})
 
 const loadVideos = async () => {
   loading.value = true
@@ -41,15 +119,62 @@ const loadVideos = async () => {
   finally { loading.value = false }
 }
 
-const handleEdit = async (row: Video) => {
-  const { value } = await ElMessageBox.prompt('请输入新标题', '编辑视频', {
-    inputValue: row.title, inputPattern: /.+/, inputErrorMessage: '标题不能为空'
-  })
+const loadCategories = async () => {
   try {
-    await videosApi.update(row.id, { title: value })
+    const { data } = await categoriesApi.list()
+    categories.value = data
+  } catch (e) {
+    console.error('Failed to load categories', e)
+  }
+}
+
+const loadTags = async () => {
+  try {
+    const { data } = await tagsApi.list()
+    tags.value = data
+  } catch (e) {
+    console.error('Failed to load tags', e)
+  }
+}
+
+const handleEdit = (row: Video) => {
+  editingVideo.value = row
+  editForm.title = row.title
+  editForm.category_id = row.category_id
+  editForm.tag_ids = row.tags?.map(t => t.id) || []
+  showEditDialog.value = true
+}
+
+const saveEdit = async () => {
+  if (!editingVideo.value) return
+
+  saving.value = true
+  try {
+    // Update title
+    if (editForm.title !== editingVideo.value.title) {
+      await videosApi.update(editingVideo.value.id, { title: editForm.title })
+    }
+
+    // Update category
+    if (editForm.category_id !== editingVideo.value.category_id) {
+      await videosApi.setCategory(editingVideo.value.id, editForm.category_id)
+    }
+
+    // Update tags
+    const currentTagIds = editingVideo.value.tags?.map(t => t.id) || []
+    const newTagIds = editForm.tag_ids
+    if (JSON.stringify(currentTagIds.sort()) !== JSON.stringify(newTagIds.sort())) {
+      await videosApi.setTags(editingVideo.value.id, newTagIds)
+    }
+
     ElMessage.success('更新成功')
+    showEditDialog.value = false
     loadVideos()
-  } catch (e: any) { ElMessage.error(e.response?.data?.detail || '更新失败') }
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.detail || '更新失败')
+  } finally {
+    saving.value = false
+  }
 }
 
 const handleDelete = async (row: Video) => {
@@ -75,10 +200,15 @@ const formatSize = (b: number | null) => {
 }
 const formatTime = (t: string) => new Date(t).toLocaleString('zh-CN')
 
-onMounted(loadVideos)
+onMounted(() => {
+  loadVideos()
+  loadCategories()
+  loadTags()
+})
 </script>
 
 <style scoped>
 .videos-page { padding: 20px; }
 .page-header { margin-bottom: 20px; }
+.text-muted { color: #909399; }
 </style>

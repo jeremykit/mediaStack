@@ -49,7 +49,11 @@
       "mcp__chrome-devtools__click",
       "mcp__chrome-devtools__wait_for",
       "mcp__chrome-devtools__fill",
-      "mcp__chrome-devtools__press_key"
+      "mcp__chrome-devtools__press_key",
+      "Skill(superpowers:brainstorming:*)",
+      "Bash(uvicorn:*)",
+      "Bash(npm run dev)",
+      "Bash(venvScriptsactivate)"
     ]
   }
 }

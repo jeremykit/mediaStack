@@ -14,6 +14,18 @@
         <el-menu-item index="/admin/videos">
           <span>视频管理</span>
         </el-menu-item>
+        <el-menu-item index="/admin/upload">
+          <span>文件上传</span>
+        </el-menu-item>
+        <el-menu-item index="/admin/categories">
+          <span>分类管理</span>
+        </el-menu-item>
+        <el-menu-item index="/admin/tags">
+          <span>标签管理</span>
+        </el-menu-item>
+        <el-menu-item index="/admin/view-codes">
+          <span>观看码管理</span>
+        </el-menu-item>
         <el-menu-item index="/admin/system">
           <span>系统状态</span>
         </el-menu-item>

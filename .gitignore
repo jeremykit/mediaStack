@@ -28,5 +28,7 @@ dist/
 data/videos/*.mp4
 data/db/*.db
 
+backend/data/
+
 # Logs
 *.log
