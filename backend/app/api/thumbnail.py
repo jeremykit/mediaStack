@@ -155,7 +155,7 @@ async def auto_capture_thumbnail(
     await db.refresh(video)
 
     # Return thumbnail URL
-    thumbnail_url = f"/api/thumbnails/{unique_filename}"
+    thumbnail_url = f"/thumbnails/{unique_filename}"
     return ThumbnailResponse(video_id=video_id, thumbnail_url=thumbnail_url)
 
 
@@ -213,7 +213,7 @@ async def upload_thumbnail(
     await db.refresh(video)
 
     # Return thumbnail URL
-    thumbnail_url = f"/api/thumbnails/{unique_filename}"
+    thumbnail_url = f"/thumbnails/{unique_filename}"
     return ThumbnailResponse(video_id=video_id, thumbnail_url=thumbnail_url)
 
 
@@ -266,5 +266,5 @@ async def capture_thumbnail_at_time(
     await db.refresh(video)
 
     # Return thumbnail URL
-    thumbnail_url = f"/api/thumbnails/{unique_filename}"
+    thumbnail_url = f"/thumbnails/{unique_filename}"
     return ThumbnailResponse(video_id=video_id, thumbnail_url=thumbnail_url)

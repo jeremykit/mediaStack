@@ -46,6 +46,15 @@ class AudioExtractorService:
         if not video:
             raise ValueError("Video not found")
 
+        # Get absolute path to video file
+        video_path = Path(video.file_path)
+        if not video_path.is_absolute():
+            video_path = settings.storage_path / video.file_path
+
+        # Check if video file exists
+        if not video_path.exists():
+            raise ValueError(f"Video file not found: {video_path}")
+
         # Check if there's already a processing task
         result = await db.execute(
             select(AudioExtractTask).where(
@@ -76,7 +85,6 @@ class AudioExtractorService:
         audio_dir.mkdir(parents=True, exist_ok=True)
 
         # Generate output filename
-        video_path = Path(video.file_path)
         output_filename = f"{video_path.stem}.{format}"
         output_path = audio_dir / output_filename
 
@@ -93,7 +101,7 @@ class AudioExtractorService:
         await db.refresh(task)
 
         # Start extraction in background
-        asyncio.create_task(cls._run_ffmpeg(task.id, video.file_path, output_path, bitrate))
+        asyncio.create_task(cls._run_ffmpeg(task.id, str(video_path), output_path, bitrate))
         return task
 
     @classmethod
