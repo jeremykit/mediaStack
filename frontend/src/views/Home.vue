@@ -214,7 +214,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+/* 使用 font-display: swap 优化字体加载 */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap') layer(fonts);
 
 * {
   margin: 0;
@@ -225,7 +226,8 @@ onMounted(() => {
 .home-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #FFF5F7 0%, #FFF9E6 50%, #F0F9FF 100%);
-  font-family: 'Noto Sans SC', 'Poppins', sans-serif;
+  /* 使用系统字体作为后备，避免字体加载时的空白 */
+  font-family: 'Noto Sans SC', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
 }
 
 /* Hero Section */
