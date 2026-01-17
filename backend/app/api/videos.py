@@ -3,13 +3,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
+from datetime import datetime
 import os
 
 from app.database import get_db
 from app.models import Admin, VideoFile, Tag, Category
+from app.models.video import VideoStatus
 from app.schemas.video import (
     VideoUpdate, VideoResponse, VideoPlayResponse,
-    SetCategoryRequest, SetTagsRequest
+    SetCategoryRequest, SetTagsRequest,
+    BatchPublishRequest, BatchOfflineRequest, BatchOperationResponse
 )
 from app.schemas.category import CategoryListResponse
 from app.schemas.tag import TagListResponse
@@ -25,6 +28,7 @@ def video_to_response(video: VideoFile) -> VideoResponse:
         task_id=video.task_id,
         category_id=video.category_id,
         title=video.title,
+        description=video.description,
         file_path=video.file_path,
         file_size=video.file_size,
         duration=video.duration,
@@ -32,6 +36,9 @@ def video_to_response(video: VideoFile) -> VideoResponse:
         view_count=video.view_count,
         source_type=video.source_type,
         file_type=video.file_type,
+        status=video.status,
+        reviewed_at=video.reviewed_at,
+        reviewed_by=video.reviewed_by,
         created_at=video.created_at,
         category=CategoryListResponse(
             id=video.category.id,
@@ -50,6 +57,7 @@ async def list_videos(
     search: Optional[str] = Query(None),
     category_id: Optional[int] = Query(None),
     tag_ids: Optional[str] = Query(None, description="Comma-separated tag IDs"),
+    status: Optional[VideoStatus] = Query(None, description="Filter by video status"),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     x_view_code: Optional[str] = Header(None, alias="X-View-Code"),
@@ -68,6 +76,9 @@ async def list_videos(
     if category_id:
         query = query.where(VideoFile.category_id == category_id)
 
+    if status:
+        query = query.where(VideoFile.status == status)
+
     if tag_ids:
         try:
             tag_id_list = [int(tid.strip()) for tid in tag_ids.split(",") if tid.strip()]
@@ -83,6 +94,87 @@ async def list_videos(
     videos = result.scalars().all()
 
     return [video_to_response(v) for v in videos]
+
+
+@router.get("/pending", response_model=List[VideoResponse])
+async def list_pending_videos(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    current_user: Admin = Depends(get_current_user)
+):
+    """List pending videos for review (admin only)."""
+    query = (
+        select(VideoFile)
+        .options(selectinload(VideoFile.category), selectinload(VideoFile.tags))
+        .where(VideoFile.status == VideoStatus.pending)
+        .order_by(VideoFile.id.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await db.execute(query)
+    videos = result.scalars().all()
+    return [video_to_response(v) for v in videos]
+
+
+@router.post("/batch-publish", response_model=BatchOperationResponse)
+async def batch_publish_videos(
+    data: BatchPublishRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Admin = Depends(get_current_user)
+):
+    """Batch publish videos (admin only)."""
+    success_count = 0
+    failed_ids = []
+
+    # Query all videos at once to avoid N+1 problem
+    result = await db.execute(
+        select(VideoFile).where(VideoFile.id.in_(data.video_ids))
+    )
+    videos = {v.id: v for v in result.scalars().all()}
+
+    for video_id in data.video_ids:
+        video = videos.get(video_id)
+        if video:
+            video.status = VideoStatus.published
+            video.reviewed_at = datetime.utcnow()
+            video.reviewed_by = current_user.id
+            success_count += 1
+        else:
+            failed_ids.append(video_id)
+
+    await db.commit()
+    return BatchOperationResponse(success_count=success_count, failed_ids=failed_ids)
+
+
+@router.post("/batch-offline", response_model=BatchOperationResponse)
+async def batch_offline_videos(
+    data: BatchOfflineRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Admin = Depends(get_current_user)
+):
+    """Batch offline videos (admin only)."""
+    success_count = 0
+    failed_ids = []
+
+    # Query all videos at once to avoid N+1 problem
+    result = await db.execute(
+        select(VideoFile).where(VideoFile.id.in_(data.video_ids))
+    )
+    videos = {v.id: v for v in result.scalars().all()}
+
+    for video_id in data.video_ids:
+        video = videos.get(video_id)
+        if video:
+            video.status = VideoStatus.offline
+            video.reviewed_at = datetime.utcnow()
+            video.reviewed_by = current_user.id
+            success_count += 1
+        else:
+            failed_ids.append(video_id)
+
+    await db.commit()
+    return BatchOperationResponse(success_count=success_count, failed_ids=failed_ids)
 
 
 @router.get("/{video_id}", response_model=VideoResponse)
@@ -195,6 +287,54 @@ async def set_video_tags(
         .where(VideoFile.id == video_id)
     )
     video = result.scalar_one_or_none()
+    return video_to_response(video)
+
+
+@router.post("/{video_id}/publish", response_model=VideoResponse)
+async def publish_video(
+    video_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Admin = Depends(get_current_user)
+):
+    """Publish a video (admin only)."""
+    result = await db.execute(
+        select(VideoFile)
+        .options(selectinload(VideoFile.category), selectinload(VideoFile.tags))
+        .where(VideoFile.id == video_id)
+    )
+    video = result.scalar_one_or_none()
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    video.status = VideoStatus.published
+    video.reviewed_at = datetime.utcnow()
+    video.reviewed_by = current_user.id
+
+    await db.commit()
+    return video_to_response(video)
+
+
+@router.post("/{video_id}/offline", response_model=VideoResponse)
+async def offline_video(
+    video_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Admin = Depends(get_current_user)
+):
+    """Take a video offline (admin only)."""
+    result = await db.execute(
+        select(VideoFile)
+        .options(selectinload(VideoFile.category), selectinload(VideoFile.tags))
+        .where(VideoFile.id == video_id)
+    )
+    video = result.scalar_one_or_none()
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    video.status = VideoStatus.offline
+    video.reviewed_at = datetime.utcnow()
+    video.reviewed_by = current_user.id
+
+    await db.commit()
     return video_to_response(video)
 
 

@@ -104,10 +104,11 @@ const handleCheckStatus = async (row: Source & { checking?: boolean }) => {
     const { data } = await sourcesApi.checkStatus(row.id)
     ElMessage({
       type: data.online ? 'success' : 'warning',
-      message: data.online ? '直播源在线' : `直播源离线: ${data.message}`
+      message: data.message,
+      duration: 5000
     })
   } catch (e: any) {
-    ElMessage.error('检测失败')
+    ElMessage.error(e.response?.data?.detail || '检测失败，请检查网络连接')
   } finally {
     row.checking = false
   }

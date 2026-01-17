@@ -11,6 +11,9 @@
         <el-menu-item index="/admin/schedules">
           <span>定时计划</span>
         </el-menu-item>
+        <el-menu-item index="/admin/recordings">
+          <span>录制管理</span>
+        </el-menu-item>
         <el-menu-item index="/admin/videos">
           <span>视频管理</span>
         </el-menu-item>

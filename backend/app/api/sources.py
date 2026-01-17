@@ -27,6 +27,13 @@ async def create_source(
     db: AsyncSession = Depends(get_db),
     current_user: Admin = Depends(get_current_user)
 ):
+    # Validate protocol matches URL
+    url_lower = source.url.lower()
+    if source.protocol.value == "rtmp" and not url_lower.startswith("rtmp://"):
+        raise HTTPException(status_code=400, detail="RTMP protocol requires rtmp:// URL")
+    elif source.protocol.value == "hls" and not (url_lower.startswith("http://") or url_lower.startswith("https://")):
+        raise HTTPException(status_code=400, detail="HLS protocol requires http:// or https:// URL")
+
     db_source = LiveSource(**source.model_dump())
     db.add(db_source)
     await db.commit()
@@ -59,7 +66,19 @@ async def update_source(
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")
 
-    for key, value in source_update.model_dump(exclude_unset=True).items():
+    # Get the updated values
+    update_data = source_update.model_dump(exclude_unset=True)
+
+    # Validate protocol matches URL if either is being updated
+    final_protocol = update_data.get('protocol', source.protocol).value
+    final_url = update_data.get('url', source.url).lower()
+
+    if final_protocol == "rtmp" and not final_url.startswith("rtmp://"):
+        raise HTTPException(status_code=400, detail="RTMP 协议需要 rtmp:// 开头的 URL")
+    elif final_protocol == "hls" and not (final_url.startswith("http://") or final_url.startswith("https://")):
+        raise HTTPException(status_code=400, detail="HLS 协议需要 http:// 或 https:// 开头的 URL")
+
+    for key, value in update_data.items():
         setattr(source, key, value)
 
     await db.commit()

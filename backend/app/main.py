@@ -5,7 +5,7 @@ from pathlib import Path
 
 from app.config import settings
 from app.database import init_db, async_session
-from app.api import auth, sources, tasks, schedules, videos, system, categories, tags, view_codes, upload
+from app.api import auth, sources, tasks, schedules, videos, system, categories, tags, view_codes, upload, video_extensions, audio, thumbnail
 from app.services.scheduler import init_scheduler, shutdown_scheduler
 from app.init_admin import create_initial_admin
 
@@ -18,6 +18,12 @@ async def lifespan(app: FastAPI):
 
     # Create temp directory for uploads
     (settings.storage_path / "temp").mkdir(parents=True, exist_ok=True)
+
+    # Create audio directory for extracted audio files
+    (settings.storage_path / "audio").mkdir(parents=True, exist_ok=True)
+
+    # Create thumbnails directory for video thumbnails
+    (settings.storage_path / "thumbnails").mkdir(parents=True, exist_ok=True)
 
     # Create database directory
     db_path = Path(settings.database_url.replace("sqlite+aiosqlite:///", ""))
@@ -60,3 +66,6 @@ app.include_router(categories.router)
 app.include_router(tags.router)
 app.include_router(view_codes.router)
 app.include_router(upload.router)
+app.include_router(video_extensions.router)
+app.include_router(audio.router)
+app.include_router(thumbnail.router)

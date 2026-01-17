@@ -31,6 +31,7 @@ const router = createRouter({
         { path: 'sources', name: 'admin-sources', component: () => import('../views/admin/Sources.vue') },
         { path: 'tasks', name: 'admin-tasks', component: () => import('../views/admin/Tasks.vue') },
         { path: 'schedules', name: 'admin-schedules', component: () => import('../views/admin/Schedules.vue') },
+        { path: 'recordings', name: 'admin-recordings', component: () => import('../views/admin/Recordings.vue') },
         { path: 'videos', name: 'admin-videos', component: () => import('../views/admin/Videos.vue') },
         { path: 'system', name: 'admin-system', component: () => import('../views/admin/System.vue') },
         { path: 'categories', name: 'admin-categories', component: () => import('../views/admin/Categories.vue') },
