@@ -52,6 +52,7 @@ copy .env.example .env
 
 #### 5. 启动后端服务
 ```bash
+cd backend && venv\Scripts\activate
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 

@@ -1,0 +1,415 @@
+/**
+ * MediaStack Admin Theme
+ * Modern Professional Media Workstation Aesthetic
+ *
+ * Color Palette:
+ * - Primary: #E94560 (Crimson Red)
+ * - Secondary: #8B5CF6 (Purple)
+ * - Background: #0a0e1a (Deep Navy)
+ * - Surface: rgba(15, 20, 35, 0.6) (Dark Blue with transparency)
+ * - Text: #e4e7eb (Light Gray)
+ */
+
+/* Global Element Plus Overrides for Dark Theme */
+
+/* Dialog */
+.el-dialog {
+  background: rgba(15, 20, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.el-dialog__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 24px;
+}
+
+.el-dialog__title {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.el-dialog__body {
+  color: #e4e7eb;
+  padding: 24px;
+}
+
+.el-dialog__footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px 24px;
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+}
+
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: #E94560;
+}
+
+/* Form */
+.el-form-item__label {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.el-input__wrapper {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.el-input__wrapper:hover {
+  border-color: rgba(233, 69, 96, 0.3);
+}
+
+.el-input__wrapper.is-focus {
+  border-color: #E94560;
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+}
+
+.el-input__inner {
+  color: #e4e7eb;
+}
+
+.el-input__inner::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.el-textarea__inner {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #e4e7eb;
+}
+
+.el-textarea__inner::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.el-textarea__inner:hover {
+  border-color: rgba(233, 69, 96, 0.3);
+}
+
+.el-textarea__inner:focus {
+  border-color: #E94560;
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+}
+
+/* Select */
+.el-select__wrapper {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.el-select__wrapper:hover {
+  border-color: rgba(233, 69, 96, 0.3);
+}
+
+.el-select__wrapper.is-focused {
+  border-color: #E94560;
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+}
+
+.el-select__placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.el-select-dropdown {
+  background: rgba(15, 20, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.el-select-dropdown__item {
+  color: #e4e7eb;
+}
+
+.el-select-dropdown__item:hover {
+  background: rgba(233, 69, 96, 0.1);
+}
+
+.el-select-dropdown__item.is-selected {
+  background: rgba(233, 69, 96, 0.2);
+  color: #E94560;
+  font-weight: 600;
+}
+
+/* Switch */
+.el-switch__core {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.el-switch.is-checked .el-switch__core {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+  border-color: transparent;
+}
+
+/* Radio & Checkbox */
+.el-radio__input.is-checked .el-radio__inner {
+  background: #E94560;
+  border-color: #E94560;
+}
+
+.el-radio__label {
+  color: #e4e7eb;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background: #E94560;
+  border-color: #E94560;
+}
+
+.el-checkbox__label {
+  color: #e4e7eb;
+}
+
+/* Message Box */
+.el-message-box {
+  background: rgba(15, 20, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.el-message-box__title {
+  color: #fff;
+}
+
+.el-message-box__content {
+  color: #e4e7eb;
+}
+
+.el-message-box__btns .el-button--primary {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+  border: none;
+}
+
+/* Message */
+.el-message {
+  background: rgba(15, 20, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.el-message__content {
+  color: #e4e7eb;
+}
+
+.el-message--success {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.el-message--warning {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.el-message--error {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Pagination */
+.el-pagination {
+  color: #e4e7eb;
+}
+
+.el-pagination button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e4e7eb;
+  border-radius: 6px;
+}
+
+.el-pagination button:hover {
+  background: rgba(233, 69, 96, 0.1);
+  color: #E94560;
+}
+
+.el-pagination .el-pager li {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e4e7eb;
+  border-radius: 6px;
+  margin: 0 4px;
+}
+
+.el-pagination .el-pager li:hover {
+  background: rgba(233, 69, 96, 0.1);
+  color: #E94560;
+}
+
+.el-pagination .el-pager li.is-active {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+  color: #fff;
+}
+
+/* Upload */
+.el-upload {
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.3s ease;
+}
+
+.el-upload:hover {
+  border-color: #E94560;
+  background: rgba(233, 69, 96, 0.05);
+}
+
+.el-upload-dragger {
+  background: transparent;
+  border: none;
+}
+
+.el-upload-dragger .el-icon {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.el-upload-dragger:hover .el-icon {
+  color: #E94560;
+}
+
+.el-upload__text {
+  color: #e4e7eb;
+}
+
+.el-upload__tip {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Progress */
+.el-progress__text {
+  color: #e4e7eb;
+}
+
+.el-progress-bar__outer {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.el-progress-bar__inner {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+}
+
+/* Tabs */
+.el-tabs__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.el-tabs__item {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.el-tabs__item:hover {
+  color: #E94560;
+}
+
+.el-tabs__item.is-active {
+  color: #E94560;
+}
+
+.el-tabs__active-bar {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+}
+
+/* Card */
+.el-card {
+  background: rgba(15, 20, 35, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  color: #e4e7eb;
+}
+
+.el-card__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Popover */
+.el-popover {
+  background: rgba(15, 20, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  color: #e4e7eb;
+}
+
+.el-popover__title {
+  color: #fff;
+}
+
+/* Tooltip */
+.el-tooltip__popper {
+  background: rgba(15, 20, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e4e7eb;
+}
+
+.el-tooltip__popper[data-popper-placement^="top"] .el-popper__arrow::before {
+  border-top-color: rgba(15, 20, 35, 0.95);
+}
+
+.el-tooltip__popper[data-popper-placement^="bottom"] .el-popper__arrow::before {
+  border-bottom-color: rgba(15, 20, 35, 0.95);
+}
+
+.el-tooltip__popper[data-popper-placement^="left"] .el-popper__arrow::before {
+  border-left-color: rgba(15, 20, 35, 0.95);
+}
+
+.el-tooltip__popper[data-popper-placement^="right"] .el-popper__arrow::before {
+  border-right-color: rgba(15, 20, 35, 0.95);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Utility Classes */
+.gradient-text {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-panel {
+  background: rgba(15, 20, 35, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.glow-border {
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+}

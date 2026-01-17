@@ -145,12 +145,152 @@ onMounted(loadSources)
 
 <style scoped>
 .sources-page {
-  padding: 20px;
+  padding: 0;
 }
+
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+/* Override Element Plus table styles for dark theme */
+:deep(.el-table) {
+  background: rgba(15, 20, 35, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  color: #e4e7eb;
+}
+
+:deep(.el-table__header-wrapper) {
+  background: rgba(233, 69, 96, 0.05);
+}
+
+:deep(.el-table th.el-table__cell) {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:deep(.el-table tr) {
+  background: transparent;
+}
+
+:deep(.el-table__row) {
+  transition: all 0.3s ease;
+}
+
+:deep(.el-table__row:hover > td) {
+  background: rgba(233, 69, 96, 0.08) !important;
+}
+
+:deep(.el-table td.el-table__cell) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: #e4e7eb;
+}
+
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+:deep(.el-table__empty-block) {
+  background: transparent;
+}
+
+:deep(.el-table__empty-text) {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Button styles */
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3);
+}
+
+:deep(.el-button--primary:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(233, 69, 96, 0.4);
+}
+
+:deep(.el-button--success) {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+:deep(.el-button--success:hover) {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.6);
+}
+
+:deep(.el-button--danger) {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+:deep(.el-button--danger:hover) {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+:deep(.el-button--small) {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+/* Tag styles */
+:deep(.el-tag) {
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 4px 12px;
+}
+
+:deep(.el-tag--success) {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+:deep(.el-tag--info) {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+:deep(.el-tag:not(.el-tag--success):not(.el-tag--info)) {
+  background: rgba(139, 92, 246, 0.2);
+  color: #8B5CF6;
+}
+
+/* Loading overlay */
+:deep(.el-loading-mask) {
+  background: rgba(10, 14, 26, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+:deep(.el-loading-spinner .circular) {
+  stroke: #E94560;
 }
 </style>
