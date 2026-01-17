@@ -8,7 +8,7 @@ import os
 
 from app.database import get_db
 from app.models import Admin, VideoFile, Tag, Category
-from app.models.video import VideoStatus
+from app.models.video import VideoStatus, FileType
 from app.schemas.video import (
     VideoUpdate, VideoResponse, VideoPlayResponse,
     SetCategoryRequest, SetTagsRequest,
