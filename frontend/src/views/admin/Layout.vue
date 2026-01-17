@@ -122,11 +122,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue'
+import { computed, h, type VNode } from 'vue'
 import { useRoute } from 'vue-router'
 import SystemStatus from '../../components/SystemStatus.vue'
 
 const route = useRoute()
+
+// Menu Item Type
+interface MenuItem {
+  path: string
+  label: string
+  icon: () => VNode
+  badge?: string
+}
 
 // SVG Icon Components
 const IconBroadcast = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, [
@@ -181,14 +189,14 @@ const IconChart = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', xmlns: 'h
 ])
 
 // Menu Items
-const recordingMenuItems = [
+const recordingMenuItems: MenuItem[] = [
   { path: '/admin/sources', label: '直播源管理', icon: IconBroadcast },
   { path: '/admin/tasks', label: '录制任务', icon: IconRecord },
   { path: '/admin/schedules', label: '定时计划', icon: IconClock },
   { path: '/admin/recordings', label: '录制管理', icon: IconFolder }
 ]
 
-const contentMenuItems = [
+const contentMenuItems: MenuItem[] = [
   { path: '/admin/videos', label: '视频管理', icon: IconVideo },
   { path: '/admin/upload', label: '文件上传', icon: IconUpload },
   { path: '/admin/categories', label: '分类管理', icon: IconGrid },
@@ -196,7 +204,7 @@ const contentMenuItems = [
   { path: '/admin/view-codes', label: '观看码管理', icon: IconKey }
 ]
 
-const systemMenuItems = [
+const systemMenuItems: MenuItem[] = [
   { path: '/admin/system', label: '系统状态', icon: IconChart }
 ]
 
