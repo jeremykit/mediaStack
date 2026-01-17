@@ -74,7 +74,74 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.system-page { padding: 20px; }
-.el-card { text-align: center; }
-.disk-info { margin-top: 12px; color: #909399; font-size: 14px; }
+.system-page {
+  padding: 0;
+}
+
+.system-page h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 24px 0;
+}
+
+.disk-info {
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+/* Card styles */
+:deep(.el-card) {
+  background: rgba(15, 20, 35, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  color: #e4e7eb;
+  text-align: center;
+}
+
+:deep(.el-card__header) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-weight: 600;
+  background: rgba(233, 69, 96, 0.05);
+}
+
+/* Progress styles */
+:deep(.el-progress__text) {
+  color: #e4e7eb;
+  font-weight: 600;
+}
+
+:deep(.el-progress-circle__track) {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+/* Button styles */
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3);
+  color: #fff;
+}
+
+:deep(.el-button:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(233, 69, 96, 0.4);
+}
+
+/* Loading overlay */
+:deep(.el-loading-mask) {
+  background: rgba(10, 14, 26, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+:deep(.el-loading-spinner .circular) {
+  stroke: #E94560;
+}
 </style>

@@ -361,67 +361,76 @@ onMounted(() => {
 
 <style scoped>
 .upload-page {
-  padding: 20px;
+  padding: 0;
 }
 
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .page-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
   margin: 0;
 }
 
 .upload-area {
-  border: 2px dashed #dcdfe6;
-  border-radius: 8px;
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   padding: 60px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s;
+  background: rgba(15, 20, 35, 0.4);
 }
 
 .upload-area:hover,
 .upload-area.is-dragover {
-  border-color: #409eff;
-  background-color: #f5f7fa;
+  border-color: #E94560;
+  background: rgba(233, 69, 96, 0.05);
 }
 
 .upload-icon {
-  color: #909399;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .upload-text {
   margin: 16px 0 8px;
   font-size: 16px;
-  color: #606266;
+  color: #e4e7eb;
+  font-weight: 500;
 }
 
 .upload-hint {
   margin: 0;
   font-size: 12px;
-  color: #909399;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .upload-progress {
   margin-top: 20px;
   padding: 16px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  background: rgba(15, 20, 35, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
 }
 
 .upload-info {
   display: flex;
   justify-content: space-between;
   margin-bottom: 8px;
+  color: #e4e7eb;
 }
 
 .filename {
   font-weight: 500;
+  color: #fff;
 }
 
 .status {
-  color: #909399;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .upload-actions {
@@ -440,5 +449,61 @@ onMounted(() => {
 
 .upload-history h3 {
   margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Button styles */
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3);
+}
+
+:deep(.el-button--primary:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(233, 69, 96, 0.4);
+}
+
+:deep(.el-button--danger) {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+:deep(.el-button--danger:hover) {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+:deep(.el-button--success) {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+:deep(.el-button--success:hover) {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.6);
+}
+
+/* Progress styles */
+:deep(.el-progress__text) {
+  color: #e4e7eb;
+}
+
+:deep(.el-progress-bar__outer) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:deep(.el-progress-bar__inner) {
+  background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
 }
 </style>
