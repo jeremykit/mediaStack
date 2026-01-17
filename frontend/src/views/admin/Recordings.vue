@@ -221,7 +221,6 @@
           <VideoExtensions
             v-if="editingVideo"
             :video-id="editingVideo.id"
-            ref="extensionsRef"
           />
         </el-tab-pane>
 
@@ -306,7 +305,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { UploadRawFile } from 'element-plus'
 import { videosApi, type Video, type VideoStatus } from '../../api/videos'
@@ -327,7 +326,6 @@ const editingVideo = ref<Video | null>(null)
 const activeTab = ref('all')
 const selectedIds = ref<number[]>([])
 const editActiveTab = ref('basic')
-const extensionsRef = ref<InstanceType<typeof VideoExtensions>>()
 
 // Thumbnail state
 const capturingThumbnail = ref(false)

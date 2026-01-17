@@ -408,7 +408,9 @@ const handleSaveLink = async () => {
   savingLink.value = true
   try {
     if (editingLink.value) {
-      await videoExtensionsApi.updateLink(props.videoId, editingLink.value.id, {
+      // Update existing link - delete and recreate since backend doesn't have update endpoint
+      await videoExtensionsApi.deleteLink(props.videoId, editingLink.value.id)
+      await videoExtensionsApi.createLink(props.videoId, {
         title: linkForm.title,
         url: linkForm.url,
         sort_order: linkForm.sort_order
