@@ -216,8 +216,6 @@ const currentPageTitle = computed(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
-
 * {
   margin: 0;
   padding: 0;
@@ -229,7 +227,7 @@ const currentPageTitle = computed(() => {
   height: 100vh;
   background: #0a0e1a;
   color: #e4e7eb;
-  font-family: 'Noto Sans SC', 'JetBrains Mono', sans-serif;
+  font-family: var(--font-admin);
   position: relative;
   overflow: hidden;
 }
@@ -323,7 +321,7 @@ const currentPageTitle = computed(() => {
 .brand-name {
   font-size: 20px;
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -335,7 +333,7 @@ const currentPageTitle = computed(() => {
 .brand-tagline {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.4);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -367,7 +365,7 @@ const currentPageTitle = computed(() => {
 .status-text {
   font-size: 11px;
   font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   color: #E94560;
   letter-spacing: 1px;
 }
@@ -403,7 +401,7 @@ const currentPageTitle = computed(() => {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   padding: 0 20px 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .nav-item {
@@ -470,7 +468,7 @@ const currentPageTitle = computed(() => {
   font-size: 11px;
   font-weight: 600;
   border-radius: 10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 /* Sidebar Footer */
@@ -562,7 +560,7 @@ const currentPageTitle = computed(() => {
   font-weight: 600;
   color: #fff;
   margin: 0;
-  font-family: 'Noto Sans SC', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .header-right {

@@ -1,0 +1,53 @@
+/**
+ * 本地字体配置
+ * 使用系统自带字体，无需加载外部资源
+ */
+
+/* 英文字体 - 使用系统等宽字体替代 Poppins */
+@font-face {
+  font-family: 'SystemRounded';
+  src: local('SF Pro Rounded'), /* macOS */
+       local('Segoe UI'), /* Windows */
+       local('Ubuntu'), /* Linux */
+       local('Roboto'); /* Android */
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 中文字体 - 使用系统中文字体 */
+@font-face {
+  font-family: 'SystemChinese';
+  src: local('PingFang SC'), /* macOS */
+       local('Microsoft YaHei'), /* Windows */
+       local('Noto Sans CJK SC'), /* Linux */
+       local('Source Han Sans SC'); /* 思源黑体 */
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 等宽字体 - 用于代码和技术文本 */
+@font-face {
+  font-family: 'SystemMono';
+  src: local('SF Mono'), /* macOS */
+       local('Consolas'), /* Windows */
+       local('Monaco'), /* macOS fallback */
+       local('Courier New'); /* Universal fallback */
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* CSS 变量定义 */
+:root {
+  /* 首页使用的字体栈 - 圆润友好 */
+  --font-home: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', sans-serif;
+
+  /* 管理后台使用的字体栈 - 专业技术感 */
+  --font-admin: 'SF Mono', 'Consolas', 'Monaco', 'PingFang SC', 'Microsoft YaHei', monospace;
+
+  /* 通用字体栈 */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+}

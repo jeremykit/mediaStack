@@ -120,7 +120,7 @@ const formatDate = (date: string) => new Date(date).toLocaleDateString('zh-CN')
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  font-family: 'Poppins', monospace;
+  font-family: var(--font-mono);
 }
 
 .card-content {
