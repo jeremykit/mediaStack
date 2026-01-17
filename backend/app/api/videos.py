@@ -389,7 +389,20 @@ async def get_play_url(video_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Video not found")
 
     filename = os.path.basename(video.file_path)
-    return VideoPlayResponse(hls_url=f"/vod/{filename}/index.m3u8")
+
+    # Check file type
+    if video.file_type == FileType.audio:
+        # For audio files, return direct URL
+        return VideoPlayResponse(
+            audio_url=f"/audio/{filename}",
+            file_type="audio"
+        )
+    else:
+        # For video files, return HLS URL
+        return VideoPlayResponse(
+            hls_url=f"/vod/{filename}/index.m3u8",
+            file_type="video"
+        )
 
 
 @router.post("/{video_id}/view")

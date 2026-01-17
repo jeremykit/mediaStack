@@ -44,7 +44,9 @@ class VideoResponse(BaseModel):
 
 
 class VideoPlayResponse(BaseModel):
-    hls_url: str
+    hls_url: Optional[str] = None
+    audio_url: Optional[str] = None
+    file_type: str  # "video" or "audio"
 
 
 class BatchPublishRequest(BaseModel):

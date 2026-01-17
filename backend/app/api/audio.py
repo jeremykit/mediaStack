@@ -1,4 +1,5 @@
 """Audio extraction API endpoints."""
+import os
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +8,7 @@ from pathlib import Path
 import re
 
 from app.database import get_db
-from app.models import Admin, VideoFile, AudioExtractTask, AudioExtractStatus
+from app.models import Admin, VideoFile, AudioExtractTask, AudioExtractStatus, FileType
 from app.schemas.audio import (
     AudioExtractRequest,
     AudioExtractTaskResponse,
@@ -65,7 +66,23 @@ async def get_audio_info(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    # Get latest task
+    # If this is an audio file (uploaded audio), return the file itself
+    if video.file_type == FileType.audio:
+        video_path = Path(video.file_path)
+        if not video_path.is_absolute():
+            video_path = settings.storage_path / video.file_path
+
+        if video_path.exists():
+            filename = os.path.basename(video.file_path)
+            return AudioInfoResponse(
+                video_id=video_id,
+                has_audio=True,
+                task=None,
+                download_url=f"/audio/{filename}",
+                file_size=video_path.stat().st_size
+            )
+
+    # Get latest task for extracted audio
     task = await AudioExtractorService.get_task(video_id, db)
 
     if not task:
