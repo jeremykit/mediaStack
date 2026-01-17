@@ -120,8 +120,12 @@ async def auto_capture_thumbnail(
     """
     video = await get_video_or_404(video_id, db)
 
-    # Verify video file exists
+    # Get absolute path to video file
     video_path = Path(video.file_path)
+    if not video_path.is_absolute():
+        video_path = settings.storage_path / video.file_path
+
+    # Verify video file exists
     if not video_path.exists():
         raise HTTPException(status_code=404, detail="Video file not found on disk")
 
@@ -137,8 +141,11 @@ async def auto_capture_thumbnail(
     # Create thumbnails directory
     thumbnails_dir = ensure_thumbnails_dir()
 
-    # Generate unique filename
-    unique_filename = f"{uuid.uuid4()}.jpg"
+    # Generate unique filename with timestamp
+    from datetime import datetime
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    unique_id = str(uuid.uuid4())[:8]
+    unique_filename = f"thumb_{timestamp_str}_{unique_id}.jpg"
     output_path = thumbnails_dir / unique_filename
 
     # Capture thumbnail
@@ -196,8 +203,11 @@ async def upload_thumbnail(
     # Create thumbnails directory
     thumbnails_dir = ensure_thumbnails_dir()
 
-    # Generate unique filename (always save as original extension)
-    unique_filename = f"{uuid.uuid4()}{ext}"
+    # Generate unique filename with timestamp (always save as original extension)
+    from datetime import datetime
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    unique_id = str(uuid.uuid4())[:8]
+    unique_filename = f"thumb_{timestamp_str}_{unique_id}{ext}"
     output_path = thumbnails_dir / unique_filename
 
     # Save file
@@ -232,8 +242,12 @@ async def capture_thumbnail_at_time(
     """
     video = await get_video_or_404(video_id, db)
 
-    # Verify video file exists
+    # Get absolute path to video file
     video_path = Path(video.file_path)
+    if not video_path.is_absolute():
+        video_path = settings.storage_path / video.file_path
+
+    # Verify video file exists
     if not video_path.exists():
         raise HTTPException(status_code=404, detail="Video file not found on disk")
 
@@ -248,8 +262,11 @@ async def capture_thumbnail_at_time(
     # Create thumbnails directory
     thumbnails_dir = ensure_thumbnails_dir()
 
-    # Generate unique filename
-    unique_filename = f"{uuid.uuid4()}.jpg"
+    # Generate unique filename with timestamp
+    from datetime import datetime
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    unique_id = str(uuid.uuid4())[:8]
+    unique_filename = f"thumb_{timestamp_str}_{unique_id}.jpg"
     output_path = thumbnails_dir / unique_filename
 
     # Capture thumbnail

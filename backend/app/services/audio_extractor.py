@@ -1,5 +1,6 @@
 """Audio extraction service using FFmpeg."""
 import asyncio
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -14,6 +15,7 @@ class AudioExtractorService:
     """Service for extracting audio from video files using FFmpeg."""
 
     _processes: dict[int, asyncio.subprocess.Process] = {}
+    _background_tasks: set = set()  # Track background tasks to prevent garbage collection
 
     @classmethod
     async def start_extraction(
@@ -84,8 +86,22 @@ class AudioExtractorService:
         audio_dir = settings.storage_path / "audio"
         audio_dir.mkdir(parents=True, exist_ok=True)
 
-        # Generate output filename
-        output_filename = f"{video_path.stem}.{format}"
+        # Generate output filename with timestamp
+        from datetime import datetime
+        timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Use video filename's random ID if it exists, otherwise generate new one
+        video_filename = video_path.stem
+        if '_' in video_filename:
+            # Extract random ID from upload_YYYYMMDD_HHmmss_RANDOMID or record_YYYYMMDD_HHmmss
+            parts = video_filename.split('_')
+            if len(parts) >= 4 and parts[0] == 'upload':
+                random_id = parts[3]
+            else:
+                random_id = str(uuid.uuid4())[:8]
+        else:
+            random_id = str(uuid.uuid4())[:8]
+
+        output_filename = f"audio_{timestamp_str}_{random_id}.{format}"
         output_path = audio_dir / output_filename
 
         # Create extraction task
@@ -101,7 +117,9 @@ class AudioExtractorService:
         await db.refresh(task)
 
         # Start extraction in background
-        asyncio.create_task(cls._run_ffmpeg(task.id, str(video_path), output_path, bitrate))
+        bg_task = asyncio.create_task(cls._run_ffmpeg(task.id, str(video_path), output_path, bitrate))
+        cls._background_tasks.add(bg_task)
+        bg_task.add_done_callback(cls._background_tasks.discard)
         return task
 
     @classmethod

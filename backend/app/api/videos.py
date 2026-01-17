@@ -23,6 +23,18 @@ router = APIRouter(prefix="/api/videos", tags=["videos"])
 
 def video_to_response(video: VideoFile) -> VideoResponse:
     """Convert VideoFile model to VideoResponse."""
+    # Convert thumbnail path to URL
+    thumbnail_url = None
+    if video.thumbnail:
+        from pathlib import Path
+        thumb_path = Path(video.thumbnail)
+        if thumb_path.is_absolute():
+            # Extract just the filename
+            thumbnail_url = f"/thumbnails/{thumb_path.name}"
+        else:
+            # Relative path, extract filename
+            thumbnail_url = f"/thumbnails/{Path(video.thumbnail).name}"
+
     return VideoResponse(
         id=video.id,
         task_id=video.task_id,
@@ -32,7 +44,7 @@ def video_to_response(video: VideoFile) -> VideoResponse:
         file_path=video.file_path,
         file_size=video.file_size,
         duration=video.duration,
-        thumbnail=video.thumbnail,
+        thumbnail=thumbnail_url,
         view_count=video.view_count,
         source_type=video.source_type,
         file_type=video.file_type,

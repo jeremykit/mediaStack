@@ -29,7 +29,11 @@
 - 录制任务列表与状态查看
 
 **录制规则：**
-- 文件命名：按时间自动命名（格式：`直播源名称_YYYYMMDD_HHmmss.mp4`）
+- 文件命名规范：
+  - 录制视频：`record_YYYYMMDD_HHmmss.mp4`（例如：`record_20260117_143025.mp4`）
+  - 上传视频：`upload_YYYYMMDD_HHmmss_<随机ID>.mp4`（例如：`upload_20260117_143025_a599d760.mp4`）
+  - 视频封面：`thumb_YYYYMMDD_HHmmss_<UUID>.jpg`（例如：`thumb_20260117_143025_ccfaf35e.jpg`）
+  - 提取音频：`audio_YYYYMMDD_HHmmss_<随机ID>.mp3`（例如：`audio_20260117_143025_a599d760.mp3`）
 - 不分段录制，整个直播录制为单个文件
 - 超过保留时长的录像自动清理
 - 同一直播源可周期性录制，每次录制生成独立文件

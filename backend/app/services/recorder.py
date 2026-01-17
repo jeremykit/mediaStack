@@ -29,7 +29,7 @@ class RecorderService:
             raise ValueError("Source not found")
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{source.name}_{timestamp}.mp4"
+        filename = f"record_{timestamp}.mp4"
         file_path = settings.storage_path / filename
 
         task = RecordTask(
