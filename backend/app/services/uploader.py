@@ -13,7 +13,7 @@ from app.models.upload_task import UploadStatus
 
 # Allowed file extensions
 ALLOWED_VIDEO_EXTENSIONS = {'.mp4'}
-ALLOWED_AUDIO_EXTENSIONS = {'.mp3', '.wav', '.aac', '.flac'}
+ALLOWED_AUDIO_EXTENSIONS = {'.mp3', '.m4a'}
 ALLOWED_EXTENSIONS = ALLOWED_VIDEO_EXTENSIONS | ALLOWED_AUDIO_EXTENSIONS
 
 # Max file sizes

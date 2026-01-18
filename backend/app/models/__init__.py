@@ -13,6 +13,7 @@ from app.models.video_image import VideoImage
 from app.models.video_text import VideoText
 from app.models.video_link import VideoLink
 from app.models.audio_extract_task import AudioExtractTask, AudioExtractStatus
+from app.models.video_trim_task import VideoTrimTask, TrimStatus
 
 __all__ = [
     "Admin",
@@ -30,4 +31,5 @@ __all__ = [
     "VideoText",
     "VideoLink",
     "AudioExtractTask", "AudioExtractStatus",
+    "VideoTrimTask", "TrimStatus",
 ]

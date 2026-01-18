@@ -54,3 +54,4 @@ class VideoFile(Base):
     texts = relationship("VideoText", back_populates="video", cascade="all, delete-orphan")
     links = relationship("VideoLink", back_populates="video", cascade="all, delete-orphan")
     audio_extract_tasks = relationship("AudioExtractTask", back_populates="video", cascade="all, delete-orphan")
+    trim_tasks = relationship("VideoTrimTask", back_populates="video", cascade="all, delete-orphan")

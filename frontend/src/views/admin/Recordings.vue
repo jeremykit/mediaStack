@@ -82,9 +82,17 @@
       <el-table-column prop="created_at" label="创建时间" width="160">
         <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="280" fixed="right">
+      <el-table-column label="操作" width="320" fixed="right">
         <template #default="{ row }">
           <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+          <el-button
+            v-if="row.source_type === 'recorded' && row.file_type === 'video'"
+            size="small"
+            type="warning"
+            @click="handleTrim(row)"
+          >
+            裁剪
+          </el-button>
           <el-button
             v-if="row.file_type === 'video'"
             size="small"
@@ -301,6 +309,15 @@
         <el-button type="primary" @click="saveEdit" :loading="saving">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- Video Trim Dialog -->
+    <VideoTrimDialog
+      v-model="showTrimDialog"
+      :video-id="trimmingVideo?.id || 0"
+      :video-url="getTrimVideoUrl()"
+      :duration="trimmingVideo?.duration || 0"
+      @success="handleTrimSuccess"
+    />
   </div>
 </template>
 
@@ -314,6 +331,7 @@ import { tagsApi, type Tag } from '../../api/tags'
 import { audioApi, type AudioInfo } from '../../api/audio'
 import { thumbnailApi } from '../../api/thumbnail'
 import VideoExtensions from '../../components/VideoExtensions.vue'
+import VideoTrimDialog from '../../components/VideoTrimDialog.vue'
 
 const videos = ref<Video[]>([])
 const allVideos = ref<Video[]>([])
@@ -339,6 +357,10 @@ const extractingAudio = ref(false)
 const extractingAudioId = ref<number | null>(null)
 const extractFormat = ref('mp3')
 const extractBitrate = ref('192k')
+
+// Trim state
+const showTrimDialog = ref(false)
+const trimmingVideo = ref<Video | null>(null)
 
 const editForm = reactive({
   title: '',
@@ -605,6 +627,21 @@ const handleDelete = async (row: Video) => {
   } catch (e: any) {
     if (e !== 'cancel') ElMessage.error(e.response?.data?.detail || '删除失败')
   }
+}
+
+const handleTrim = (row: Video) => {
+  trimmingVideo.value = row
+  showTrimDialog.value = true
+}
+
+const handleTrimSuccess = () => {
+  ElMessage.success('视频裁剪完成，状态已重置为待审核')
+  loadVideos()
+}
+
+const getTrimVideoUrl = (): string => {
+  if (!trimmingVideo.value) return ''
+  return `/api/videos/${trimmingVideo.value.id}/stream`
 }
 
 const getStatusType = (status: VideoStatus) => {

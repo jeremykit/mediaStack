@@ -17,18 +17,27 @@
 
       <!-- Audio Player -->
       <div v-show="playMode === 'audio'" class="audio-player-container">
-        <div class="audio-cover" v-if="video.thumbnail">
-          <img :src="video.thumbnail" alt="封面" />
-        </div>
-        <div class="audio-cover audio-cover-placeholder" v-else>
-          <el-icon :size="64"><Headset /></el-icon>
-        </div>
-        <audio
-          ref="audioRef"
-          :src="audioDownloadUrl"
-          controls
-          class="audio-player"
-        ></audio>
+        <!-- Use WaveformPlayer for pure audio files -->
+        <WaveformPlayer
+          v-if="video.file_type === 'audio'"
+          :audio-url="audioDownloadUrl"
+          :cover="video.thumbnail"
+        />
+        <!-- Use simple HTML5 audio player for video files in audio mode -->
+        <template v-else>
+          <div class="audio-cover" v-if="video.thumbnail">
+            <img :src="video.thumbnail" alt="封面" />
+          </div>
+          <div class="audio-cover audio-cover-placeholder" v-else>
+            <el-icon :size="64"><Headset /></el-icon>
+          </div>
+          <audio
+            ref="audioRef"
+            :src="audioDownloadUrl"
+            controls
+            class="audio-player"
+          ></audio>
+        </template>
       </div>
     </div>
 
@@ -163,6 +172,7 @@ import {
   type VideoLink
 } from '../api/videoExtensions'
 import VideoPlayer from '../components/VideoPlayer.vue'
+import WaveformPlayer from '../components/WaveformPlayer.vue'
 
 const route = useRoute()
 const video = ref<Video | null>(null)
