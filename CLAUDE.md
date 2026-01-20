@@ -86,7 +86,7 @@ Access the application at `http://localhost`.
 - All database operations use async SQLAlchemy with `AsyncSession`
 - Recording tasks run as background asyncio tasks spawning FFmpeg subprocesses
 - Scheduler uses APScheduler with SQLAlchemy job store for persistence
-- JWT authentication with dependency injection via `get_current_admin`
+- JWT authentication with dependency injection via `get_current_user`
 
 ### Frontend Structure
 

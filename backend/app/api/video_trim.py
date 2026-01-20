@@ -1,9 +1,10 @@
 """API endpoints for video trimming."""
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.api.deps import get_db, get_current_admin
+from app.api.deps import get_db, get_current_user
 from app.models import Admin
 from app.schemas.video_trim import TrimVideoRequest, TrimTaskResponse
 from app.services.video_trimmer import VideoTrimmerService
@@ -16,7 +17,7 @@ async def trim_video(
     video_id: int,
     request: TrimVideoRequest,
     db: AsyncSession = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin)
+    current_admin: Admin = Depends(get_current_user),
 ):
     """
     Start trimming a video.
@@ -31,20 +32,22 @@ async def trim_video(
             end_time=request.end_time,
             extract_audio=request.extract_audio,
             keep_original=request.keep_original,
-            db=db
+            db=db,
         )
         return task
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to start trimming: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to start trimming: {str(e)}"
+        )
 
 
 @router.get("/videos/{video_id}/trim/tasks", response_model=List[TrimTaskResponse])
 async def get_video_trim_tasks(
     video_id: int,
     db: AsyncSession = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin)
+    current_admin: Admin = Depends(get_current_user),
 ):
     """Get all trim tasks for a video."""
     from sqlalchemy import select
@@ -63,7 +66,7 @@ async def get_video_trim_tasks(
 async def get_trim_task(
     task_id: int,
     db: AsyncSession = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin)
+    current_admin: Admin = Depends(get_current_user),
 ):
     """Get a specific trim task by ID (for polling status)."""
     task = await VideoTrimmerService.get_task_by_id(task_id, db)
@@ -76,10 +79,13 @@ async def get_trim_task(
 async def cancel_trim_task(
     task_id: int,
     db: AsyncSession = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin)
+    current_admin: Admin = Depends(get_current_user),
 ):
     """Cancel an ongoing trim task."""
     success = await VideoTrimmerService.cancel_task(task_id, db)
     if not success:
-        raise HTTPException(status_code=400, detail="Task cannot be cancelled (not found or not processing)")
+        raise HTTPException(
+            status_code=400,
+            detail="Task cannot be cancelled (not found or not processing)",
+        )
     return {"message": "Trim task cancelled successfully"}
