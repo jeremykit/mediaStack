@@ -13,7 +13,7 @@
       <div ref="waveformRef" class="waveform"></div>
       <div class="waveform-controls">
         <el-button
-          :icon="isPlaying ? Pause : VideoPlay"
+          :icon="isPlaying ? VideoPause : VideoPlay"
           @click="togglePlay"
           circle
           type="primary"
@@ -35,7 +35,7 @@
         <img v-if="cover" :src="cover" alt="封面" />
         <el-icon v-else :size="64" class="default-icon"><Headset /></el-icon>
       </div>
-      <audio ref="audioRef" :src="audioUrl" controls class="audio-player"></audio>
+      <audio :src="audioUrl" controls class="audio-player"></audio>
     </div>
   </div>
 </template>
@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import WaveSurfer from 'wavesurfer.js'
-import { VideoPlay, Pause, Headset } from '@element-plus/icons-vue'
+import { VideoPlay, VideoPause, Headset } from '@element-plus/icons-vue'
 
 interface Props {
   audioUrl: string
@@ -54,7 +54,6 @@ const props = defineProps<Props>()
 
 const displayMode = ref<'waveform' | 'cover'>('waveform')
 const waveformRef = ref<HTMLDivElement>()
-const audioRef = ref<HTMLAudioElement>()
 const isPlaying = ref(false)
 const currentTime = ref('0:00')
 const duration = ref('0:00')
@@ -94,7 +93,7 @@ const initWaveSurfer = () => {
       isPlaying.value = false
     })
 
-    wavesurfer.on('audioprocess', (time) => {
+    wavesurfer.on('audioprocess', (time: number) => {
       currentTime.value = formatTime(time)
     })
 
@@ -103,7 +102,7 @@ const initWaveSurfer = () => {
       wavesurfer!.setVolume(volume.value / 100)
     })
 
-    wavesurfer.on('error', (error) => {
+    wavesurfer.on('error', (error: unknown) => {
       console.error('WaveSurfer error:', error)
     })
   } catch (error) {

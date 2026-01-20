@@ -21,7 +21,7 @@
         <WaveformPlayer
           v-if="video.file_type === 'audio'"
           :audio-url="audioDownloadUrl"
-          :cover="video.thumbnail"
+          :cover="video.thumbnail ?? undefined"
         />
         <!-- Use simple HTML5 audio player for video files in audio mode -->
         <template v-else>

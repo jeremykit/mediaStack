@@ -61,7 +61,7 @@ class VideoTrimTask(Base):
     # Output paths
     trimmed_video_path = Column(String(512), nullable=True)
     extracted_audio_path = Column(String(512), nullable=True)
-
+ 
     # Metadata
     created_at = Column(DateTime, server_default=func.now())
     completed_at = Column(DateTime, nullable=True)

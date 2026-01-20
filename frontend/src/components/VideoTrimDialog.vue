@@ -119,7 +119,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { videoTrimApi, type TrimTask, type TrimTaskStatus } from '../api/videoTrim'
+import { videoTrimApi, type TrimTaskStatus } from '../api/videoTrim'
 
 interface Props {
   modelValue: boolean
