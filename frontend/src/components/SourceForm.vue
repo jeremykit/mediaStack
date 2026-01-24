@@ -16,6 +16,16 @@
       <el-form-item label="保留天数" prop="retention_days">
         <el-input-number v-model="form.retention_days" :min="1" :max="3650" />
       </el-form-item>
+      <el-form-item label="分类" prop="category_id">
+        <el-select v-model="form.category_id" placeholder="请选择分类（可选）" clearable>
+          <el-option
+            v-for="cat in categories"
+            :key="cat.id"
+            :label="cat.name"
+            :value="cat.id"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="启用">
         <el-switch v-model="form.is_active" />
       </el-form-item>
@@ -28,9 +38,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { sourcesApi, type Source, type SourceCreate } from '../api/sources'
+import { categoriesApi } from '../api/categories'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps<{
@@ -47,13 +58,15 @@ const visible = ref(false)
 const loading = ref(false)
 const formRef = ref<FormInstance>()
 const isEdit = ref(false)
+const categories = ref<any[]>([])
 
 const form = reactive<SourceCreate & { id?: number }>({
   name: '',
   protocol: 'rtmp',
   url: '',
   retention_days: 365,
-  is_active: true
+  is_active: true,
+  category_id: undefined
 })
 
 const rules: FormRules = {
@@ -69,7 +82,7 @@ watch(() => props.modelValue, (val) => {
     Object.assign(form, props.source)
   } else {
     isEdit.value = false
-    Object.assign(form, { name: '', protocol: 'rtmp', url: '', retention_days: 365, is_active: true })
+    Object.assign(form, { name: '', protocol: 'rtmp', url: '', retention_days: 365, is_active: true, category_id: undefined })
   }
 })
 
@@ -96,4 +109,17 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+
+const loadCategories = async () => {
+  try {
+    const { data } = await categoriesApi.list()
+    categories.value = data
+  } catch (e) {
+    console.error('Failed to load categories', e)
+  }
+}
+
+onMounted(() => {
+  loadCategories()
+})
 </script>
