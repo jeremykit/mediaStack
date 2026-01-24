@@ -18,6 +18,7 @@ class Category(Base):
 
     # Relationships
     videos = relationship("VideoFile", back_populates="category")
+    sources = relationship("LiveSource", back_populates="category")
     view_codes = relationship(
         "ViewCode",
         secondary="view_code_categories",

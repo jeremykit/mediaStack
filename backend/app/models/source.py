@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import enum
@@ -15,6 +15,7 @@ class LiveSource(Base):
     name = Column(String(64), nullable=False)
     protocol = Column(Enum(ProtocolType), nullable=False)
     url = Column(String(512), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     retention_days = Column(Integer, default=365)
     is_active = Column(Boolean, default=True)
     is_online = Column(Boolean, default=False)
@@ -24,3 +25,4 @@ class LiveSource(Base):
 
     tasks = relationship("RecordTask", back_populates="source")
     schedules = relationship("Schedule", back_populates="source")
+    category = relationship("Category", back_populates="sources")
