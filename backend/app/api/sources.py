@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from typing import List
 
 from app.database import get_db
@@ -20,6 +21,7 @@ async def list_sources(
     result = await db.execute(
         select(LiveSource, RecordTask)
         .outerjoin(RecordTask, (RecordTask.source_id == LiveSource.id) & (RecordTask.status == TaskStatus.recording))
+        .options(selectinload(LiveSource.category))
         .order_by(LiveSource.id.desc())
     )
 
@@ -35,6 +37,7 @@ async def list_sources(
             "is_active": source.is_active,
             "is_online": source.is_online,
             "last_check_time": source.last_check_time,
+            "category": source.category,
             "created_at": source.created_at,
             "updated_at": source.updated_at,
             "is_recording": task is not None
@@ -70,7 +73,11 @@ async def get_source(
     db: AsyncSession = Depends(get_db),
     current_user: Admin = Depends(get_current_user)
 ):
-    result = await db.execute(select(LiveSource).where(LiveSource.id == source_id))
+    result = await db.execute(
+        select(LiveSource)
+        .where(LiveSource.id == source_id)
+        .options(selectinload(LiveSource.category))
+    )
     source = result.scalar_one_or_none()
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")
