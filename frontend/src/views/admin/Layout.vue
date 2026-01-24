@@ -284,7 +284,7 @@ const currentPageTitle = computed(() => {
 
 /* Sidebar */
 .sidebar {
-  width: 280px;
+  width: 200px;
   background: rgba(15, 20, 35, 0.8);
   backdrop-filter: blur(20px);
   border-right: 1px solid rgba(233, 69, 96, 0.1);
