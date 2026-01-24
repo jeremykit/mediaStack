@@ -2,10 +2,18 @@
   <div class="sources-page">
     <div class="page-header">
       <h2>直播源管理</h2>
-      <el-button type="primary" @click="handleAdd">添加直播源</el-button>
+      <div>
+        <el-button
+          v-if="selectedSources.length > 0"
+          type="primary"
+          @click="showBulkCategoryDialog = true"
+        >批量设置分类 ({{ selectedSources.length }})</el-button>
+        <el-button type="primary" @click="handleAdd">添加直播源</el-button>
+      </div>
     </div>
 
-    <el-table :data="sources" v-loading="loading" stripe>
+    <el-table :data="sources" v-loading="loading" stripe @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="name" label="名称" />
       <el-table-column prop="protocol" label="协议" width="100">
@@ -78,6 +86,25 @@
     </el-table>
 
     <SourceForm v-model="formVisible" :source="currentSource" @success="loadSources" />
+
+    <el-dialog v-model="showBulkCategoryDialog" title="批量设置分类" width="400px">
+      <el-form>
+        <el-form-item label="选择分类">
+          <el-select v-model="bulkCategoryId" placeholder="请选择分类">
+            <el-option
+              v-for="cat in categories"
+              :key="cat.id"
+              :label="cat.name"
+              :value="cat.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showBulkCategoryDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleBulkUpdateCategory" :loading="bulkUpdating">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -85,6 +112,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { sourcesApi, type Source } from '../../api/sources'
+import { categoriesApi } from '../../api/categories'
 import { tasksApi } from '../../api/tasks'
 import SourceForm from '../../components/SourceForm.vue'
 
@@ -92,6 +120,11 @@ const sources = ref<(Source & { checking?: boolean; starting?: boolean; stopping
 const loading = ref(false)
 const formVisible = ref(false)
 const currentSource = ref<Source | null>(null)
+const selectedSources = ref<Source[]>([])
+const showBulkCategoryDialog = ref(false)
+const bulkCategoryId = ref<number | null>(null)
+const bulkUpdating = ref(false)
+const categories = ref<any[]>([])
 let pollTimer: number | null = null
 
 const loadSources = async () => {
@@ -184,8 +217,43 @@ const handleStopRecording = async (row: Source & { stopping?: boolean }) => {
   }
 }
 
+const loadCategories = async () => {
+  try {
+    const { data } = await categoriesApi.list()
+    categories.value = data
+  } catch (e) {
+    console.error('Failed to load categories', e)
+  }
+}
+
+const handleSelectionChange = (selection: Source[]) => {
+  selectedSources.value = selection
+}
+
+const handleBulkUpdateCategory = async () => {
+  if (!bulkCategoryId.value) {
+    ElMessage.warning('请选择分类')
+    return
+  }
+
+  bulkUpdating.value = true
+  try {
+    const sourceIds = selectedSources.value.map(s => s.id)
+    await sourcesApi.bulkUpdateCategory(sourceIds, bulkCategoryId.value)
+    ElMessage.success('批量设置成功')
+    showBulkCategoryDialog.value = false
+    bulkCategoryId.value = null
+    loadSources()
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.detail || '批量设置失败')
+  } finally {
+    bulkUpdating.value = false
+  }
+}
+
 onMounted(() => {
   loadSources()
+  loadCategories()
   startPolling()
 })
 
