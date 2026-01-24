@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from app.models.source import ProtocolType
 from app.schemas.category import CategoryListResponse
@@ -44,3 +44,12 @@ class SourceResponse(BaseModel):
 class SourceStatusResponse(BaseModel):
     online: bool
     message: str
+
+
+class BulkUpdateCategoryRequest(BaseModel):
+    source_ids: List[int]
+    category_id: int
+
+
+class BulkUpdateCategoryResponse(BaseModel):
+    updated_count: int

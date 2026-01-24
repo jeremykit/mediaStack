@@ -6,7 +6,7 @@ from typing import List
 
 from app.database import get_db
 from app.models import LiveSource, Admin, RecordTask, TaskStatus
-from app.schemas.source import SourceCreate, SourceUpdate, SourceResponse, SourceStatusResponse
+from app.schemas.source import SourceCreate, SourceUpdate, SourceResponse, SourceStatusResponse, BulkUpdateCategoryRequest, BulkUpdateCategoryResponse
 from app.api.deps import get_current_user
 from app.services.stream_checker import check_stream_status
 
@@ -138,6 +138,25 @@ async def delete_source(
 
     await db.delete(source)
     await db.commit()
+
+
+@router.post("/bulk-update-category", response_model=BulkUpdateCategoryResponse)
+async def bulk_update_category(
+    request: BulkUpdateCategoryRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Admin = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(LiveSource).where(LiveSource.id.in_(request.source_ids))
+    )
+    sources = result.scalars().all()
+
+    for source in sources:
+        source.category_id = request.category_id
+
+    await db.commit()
+
+    return BulkUpdateCategoryResponse(updated_count=len(sources))
 
 
 @router.get("/{source_id}/status", response_model=SourceStatusResponse)
