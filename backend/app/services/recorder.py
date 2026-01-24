@@ -86,12 +86,25 @@ class RecorderService:
                 if output_path.exists():
                     task.file_size = output_path.stat().st_size
                     task.duration = await cls._get_duration(output_path)
+
+                    # Get category from source or use default
+                    source_result = await db.execute(select(LiveSource).where(LiveSource.id == task.source_id))
+                    source = source_result.scalar_one()
+
+                    category_id = source.category_id
+                    if category_id is None:
+                        from app.models.category import Category
+                        default_result = await db.execute(select(Category).where(Category.name == "未分类"))
+                        default_category = default_result.scalar_one()
+                        category_id = default_category.id
+
                     video = VideoFile(
                         task_id=task.id,
                         title=output_path.stem,
                         file_path=str(output_path),
                         file_size=task.file_size,
-                        duration=task.duration
+                        duration=task.duration,
+                        category_id=category_id
                     )
                     db.add(video)
 
