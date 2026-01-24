@@ -12,6 +12,11 @@ export interface Source {
   is_recording: boolean
   created_at: string
   updated_at: string
+  category?: {
+    id: number
+    name: string
+    sort_order: number
+  }
 }
 
 export interface SourceCreate {
@@ -20,6 +25,7 @@ export interface SourceCreate {
   url: string
   retention_days?: number
   is_active?: boolean
+  category_id?: number
 }
 
 export interface SourceUpdate {
@@ -28,6 +34,7 @@ export interface SourceUpdate {
   url?: string
   retention_days?: number
   is_active?: boolean
+  category_id?: number
 }
 
 export interface SourceStatus {
@@ -41,5 +48,10 @@ export const sourcesApi = {
   create: (data: SourceCreate) => api.post<Source>('/sources', data),
   update: (id: number, data: SourceUpdate) => api.put<Source>(`/sources/${id}`, data),
   delete: (id: number) => api.delete(`/sources/${id}`),
-  checkStatus: (id: number) => api.get<SourceStatus>(`/sources/${id}/status`)
+  checkStatus: (id: number) => api.get<SourceStatus>(`/sources/${id}/status`),
+  bulkUpdateCategory: (sourceIds: number[], categoryId: number) =>
+    api.post('/sources/bulk-update-category', {
+      source_ids: sourceIds,
+      category_id: categoryId
+    })
 }
