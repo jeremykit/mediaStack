@@ -12,6 +12,15 @@ export interface Task {
   error_message: string | null
   created_at: string
   source_name?: string
+  source?: {
+    id: number
+    name: string
+    category?: {
+      id: number
+      name: string
+      sort_order: number
+    }
+  }
 }
 
 export const tasksApi = {

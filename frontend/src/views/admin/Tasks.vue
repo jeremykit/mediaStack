@@ -8,6 +8,12 @@
     <el-table :data="tasks" v-loading="loading" stripe>
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="source_name" label="直播源" />
+      <el-table-column label="分类" width="120">
+        <template #default="{ row }">
+          <el-tag v-if="row.source?.category" size="small">{{ row.source.category.name }}</el-tag>
+          <el-tag v-else size="small" type="info">未分类</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="status" label="状态" width="120">
         <template #default="{ row }">
           <el-tag :type="statusType(row.status)">{{ statusText(row.status) }}</el-tag>
