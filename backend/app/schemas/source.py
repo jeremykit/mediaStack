@@ -27,6 +27,9 @@ class SourceResponse(BaseModel):
     url: str
     retention_days: int
     is_active: bool
+    is_online: bool
+    last_check_time: Optional[datetime]
+    is_recording: bool = False
     created_at: datetime
     updated_at: datetime
 

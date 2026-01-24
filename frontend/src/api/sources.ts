@@ -7,6 +7,9 @@ export interface Source {
   url: string
   retention_days: number
   is_active: boolean
+  is_online: boolean
+  last_check_time: string | null
+  is_recording: boolean
   created_at: string
   updated_at: string
 }

@@ -7,6 +7,7 @@ from app.config import settings
 from app.database import init_db, async_session
 from app.api import auth, sources, tasks, schedules, videos, system, categories, tags, view_codes, upload, video_extensions, audio, thumbnail, video_trim
 from app.services.scheduler import init_scheduler, shutdown_scheduler
+from app.services.status_monitor import status_monitor
 from app.init_admin import create_initial_admin
 
 
@@ -33,8 +34,10 @@ async def lifespan(app: FastAPI):
     async with async_session() as db:
         await create_initial_admin(db)
     await init_scheduler()
+    await status_monitor.start(async_session)
     yield
     # Shutdown
+    await status_monitor.stop()
     shutdown_scheduler()
 
 

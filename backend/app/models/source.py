@@ -17,6 +17,8 @@ class LiveSource(Base):
     url = Column(String(512), nullable=False)
     retention_days = Column(Integer, default=365)
     is_active = Column(Boolean, default=True)
+    is_online = Column(Boolean, default=False)
+    last_check_time = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 

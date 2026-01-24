@@ -14,6 +14,19 @@
         </template>
       </el-table-column>
       <el-table-column prop="url" label="拉流地址" show-overflow-tooltip />
+      <el-table-column label="直播状态" width="100">
+        <template #default="{ row }">
+          <el-tag :type="row.is_online ? 'success' : 'danger'">
+            {{ row.is_online ? '在线' : '离线' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="录制状态" width="100">
+        <template #default="{ row }">
+          <el-tag v-if="row.is_recording" type="warning">正在录制</el-tag>
+          <el-tag v-else type="info">未录制</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="retention_days" label="保留天数" width="100" />
       <el-table-column prop="is_active" label="状态" width="80">
         <template #default="{ row }">
@@ -28,11 +41,12 @@
             检测状态
           </el-button>
           <el-button
-            v-if="!row.recording"
+            v-if="!row.is_recording"
             size="small"
             type="success"
             @click="handleStartRecording(row)"
             :loading="row.starting"
+            :disabled="!row.is_online"
           >开始录制</el-button>
           <el-button
             v-else
@@ -41,8 +55,18 @@
             @click="handleStopRecording(row)"
             :loading="row.stopping"
           >停止录制</el-button>
-          <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+          <el-button
+            size="small"
+            type="primary"
+            @click="handleEdit(row)"
+            :disabled="row.is_recording"
+          >编辑</el-button>
+          <el-button
+            size="small"
+            type="danger"
+            @click="handleDelete(row)"
+            :disabled="row.is_recording"
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -52,16 +76,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { sourcesApi, type Source } from '../../api/sources'
 import { tasksApi } from '../../api/tasks'
 import SourceForm from '../../components/SourceForm.vue'
 
-const sources = ref<(Source & { checking?: boolean; recording?: boolean; starting?: boolean; stopping?: boolean })[]>([])
+const sources = ref<(Source & { checking?: boolean; starting?: boolean; stopping?: boolean })[]>([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentSource = ref<Source | null>(null)
+let pollTimer: number | null = null
 
 const loadSources = async () => {
   loading.value = true
@@ -72,6 +97,19 @@ const loadSources = async () => {
     ElMessage.error('加载失败')
   } finally {
     loading.value = false
+  }
+}
+
+const startPolling = () => {
+  pollTimer = window.setInterval(() => {
+    loadSources()
+  }, 30000)
+}
+
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
   }
 }
 
@@ -114,12 +152,12 @@ const handleCheckStatus = async (row: Source & { checking?: boolean }) => {
   }
 }
 
-const handleStartRecording = async (row: Source & { starting?: boolean; recording?: boolean }) => {
+const handleStartRecording = async (row: Source & { starting?: boolean }) => {
   row.starting = true
   try {
     await tasksApi.startRecording(row.id)
-    row.recording = true
     ElMessage.success('已开始录制')
+    await loadSources()
   } catch (e: any) {
     ElMessage.error(e.response?.data?.detail || '启动失败')
   } finally {
@@ -127,12 +165,12 @@ const handleStartRecording = async (row: Source & { starting?: boolean; recordin
   }
 }
 
-const handleStopRecording = async (row: Source & { stopping?: boolean; recording?: boolean }) => {
+const handleStopRecording = async (row: Source & { stopping?: boolean }) => {
   row.stopping = true
   try {
     await tasksApi.stopRecording(row.id)
-    row.recording = false
     ElMessage.success('已停止录制')
+    await loadSources()
   } catch (e: any) {
     ElMessage.error(e.response?.data?.detail || '停止失败')
   } finally {
@@ -140,7 +178,14 @@ const handleStopRecording = async (row: Source & { stopping?: boolean; recording
   }
 }
 
-onMounted(loadSources)
+onMounted(() => {
+  loadSources()
+  startPolling()
+})
+
+onUnmounted(() => {
+  stopPolling()
+})
 </script>
 
 <style scoped>

@@ -17,8 +17,31 @@ async def list_sources(
     db: AsyncSession = Depends(get_db),
     current_user: Admin = Depends(get_current_user)
 ):
-    result = await db.execute(select(LiveSource).order_by(LiveSource.id.desc()))
-    return result.scalars().all()
+    result = await db.execute(
+        select(LiveSource, RecordTask)
+        .outerjoin(RecordTask, (RecordTask.source_id == LiveSource.id) & (RecordTask.status == TaskStatus.recording))
+        .order_by(LiveSource.id.desc())
+    )
+
+    sources_with_tasks = result.all()
+    response = []
+    for source, task in sources_with_tasks:
+        source_dict = {
+            "id": source.id,
+            "name": source.name,
+            "protocol": source.protocol,
+            "url": source.url,
+            "retention_days": source.retention_days,
+            "is_active": source.is_active,
+            "is_online": source.is_online,
+            "last_check_time": source.last_check_time,
+            "created_at": source.created_at,
+            "updated_at": source.updated_at,
+            "is_recording": task is not None
+        }
+        response.append(source_dict)
+
+    return response
 
 
 @router.post("", response_model=SourceResponse, status_code=status.HTTP_201_CREATED)
