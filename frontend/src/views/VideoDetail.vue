@@ -283,23 +283,29 @@ onMounted(loadVideo)
 
 <style scoped>
 .video-detail {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFF9E6 50%, #F0F9FF 100%);
+  font-family: var(--font-home);
+  padding: 40px 20px 60px;
 }
 
 .player-section {
-  margin-bottom: 20px;
+  max-width: 1000px;
+  margin: 0 auto 32px;
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(255, 107, 157, 0.15);
 }
 
 .player-mode-toggle {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   text-align: center;
 }
 
 .audio-player-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFA06B 100%);
+  border-radius: 20px;
   padding: 40px 20px;
   display: flex;
   flex-direction: column;
@@ -322,11 +328,11 @@ onMounted(loadVideo)
 }
 
 .audio-cover-placeholder {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.8);
+  color: white;
 }
 
 .audio-player {
@@ -334,22 +340,36 @@ onMounted(loadVideo)
   max-width: 400px;
 }
 
+.info-section {
+  max-width: 1000px;
+  margin: 0 auto 32px;
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(255, 107, 157, 0.15);
+}
+
 .info-section h1 {
-  margin: 0 0 12px;
-  font-size: 24px;
+  margin: 0 0 16px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
 }
 
 .meta {
   display: flex;
-  gap: 20px;
-  color: #909399;
-  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: #999;
+  margin-bottom: 20px;
+  font-size: 14px;
 }
 
 .description {
-  margin-bottom: 16px;
-  color: #606266;
-  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #666;
+  line-height: 1.8;
+  font-size: 15px;
 }
 
 .description p {
@@ -358,35 +378,51 @@ onMounted(loadVideo)
 }
 
 .audio-actions {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .tags-section {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
 }
 
 .category-tag {
   font-weight: 500;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFA06B 100%);
+  border: none;
+  color: white;
+}
+
+.video-tag {
+  background: linear-gradient(135deg, #63B3ED 0%, #4299E1 100%);
+  border: none;
+  color: white;
 }
 
 /* Extensions Section */
 .extensions-section {
-  margin-top: 32px;
-  border-top: 1px solid #ebeef5;
-  padding-top: 24px;
+  max-width: 1000px;
+  margin: 0 auto 32px;
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(255, 107, 157, 0.15);
 }
 
 .extension-block {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+}
+
+.extension-block:last-child {
+  margin-bottom: 0;
 }
 
 .extension-block h3 {
-  margin: 0 0 16px;
-  font-size: 18px;
-  color: #303133;
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
 }
 
 .carousel-image {
@@ -402,25 +438,52 @@ onMounted(loadVideo)
 .single-image-display {
   max-width: 100%;
   max-height: 400px;
+  border-radius: 16px;
 }
 
 .text-content {
   white-space: pre-wrap;
-  color: #606266;
-  line-height: 1.6;
+  color: #666;
+  line-height: 1.8;
 }
 
 .links-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .link-item {
-  padding: 8px 0;
+  padding: 12px 16px;
+  background: #FFF5F7;
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
-.link-item:not(:last-child) {
-  border-bottom: 1px solid #ebeef5;
+.link-item:hover {
+  background: #FFE0E8;
+  transform: translateX(4px);
+}
+
+/* Back Button */
+.video-detail :deep(.el-button) {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: block;
+  background: white;
+  border: 2px solid #FFE0E8;
+  color: #FF6B9D;
+  border-radius: 50px;
+  padding: 12px 32px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.video-detail :deep(.el-button:hover) {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFA06B 100%);
+  border-color: transparent;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(255, 107, 157, 0.3);
 }
 </style>
