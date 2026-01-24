@@ -13,6 +13,12 @@
           <el-tag>{{ row.protocol.toUpperCase() }}</el-tag>
         </template>
       </el-table-column>
+      <el-table-column label="分类" width="120">
+        <template #default="{ row }">
+          <el-tag v-if="row.category" size="small">{{ row.category.name }}</el-tag>
+          <el-tag v-else size="small" type="info">未分类</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="url" label="拉流地址" show-overflow-tooltip />
       <el-table-column label="直播状态" width="100">
         <template #default="{ row }">
