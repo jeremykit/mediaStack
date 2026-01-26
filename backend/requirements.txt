@@ -12,3 +12,4 @@ python-multipart>=0.0.6
 psutil>=5.9.0
 aiofiles>=23.1.0
 httpx>=0.24.0
+alembic>=1.13.0

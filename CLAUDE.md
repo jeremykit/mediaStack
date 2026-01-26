@@ -134,7 +134,8 @@ Access the application at `http://localhost`.
 - Status 255 from FFmpeg indicates user interruption (SIGTERM)
 
 **Database Initialization:**
-- `init_db()` creates all tables on startup via `Base.metadata.create_all`
+- Alembic migrations run on startup via `run_migrations()` in `main.py`
+- `init_db()` creates any remaining tables via `Base.metadata.create_all`
 - `create_initial_admin()` ensures default admin user exists
 
 **Scheduler Persistence:**
@@ -157,7 +158,18 @@ Access the application at `http://localhost`.
 **Adding a New Database Model:**
 1. Create model class in `app/models/` inheriting from `Base`
 2. Import model in `app/models/__init__.py`
-3. Database tables auto-created on next startup via `init_db()`
+3. Generate migration: `cd backend && alembic revision --autogenerate -m "description"`
+4. Review and adjust the generated migration file in `alembic/versions/`
+5. Migrations run automatically on startup, or manually via `alembic upgrade head`
+
+**Database Migrations (Alembic):**
+- Alembic is used for database schema migrations
+- Migrations run automatically on application startup via `run_migrations()` in `main.py`
+- Migration files are in `backend/alembic/versions/`
+- To create a new migration: `cd backend && alembic revision --autogenerate -m "description"`
+- To manually run migrations: `cd backend && alembic upgrade head`
+- To rollback: `cd backend && alembic downgrade -1`
+- SQLite requires `render_as_batch=True` for ALTER TABLE operations (configured in `env.py`)
 
 **Modifying Recording Logic:**
 - Core logic in `RecorderService` class (`app/services/recorder.py`)
@@ -191,6 +203,7 @@ Test configuration in `backend/pytest.ini`. Test fixtures in `backend/tests/conf
 **Python Dependencies:**
 - FastAPI for async web framework
 - SQLAlchemy 2.0+ with aiosqlite for async database
+- Alembic for database migrations
 - APScheduler for cron-based scheduling
 - python-jose for JWT handling
 - passlib with bcrypt for password hashing

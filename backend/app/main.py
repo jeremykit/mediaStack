@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pathlib import Path
+import logging
 
 from app.config import settings
 from app.database import init_db, async_session, ensure_default_category
@@ -9,6 +10,24 @@ from app.api import auth, sources, tasks, schedules, videos, system, categories,
 from app.services.scheduler import init_scheduler, shutdown_scheduler
 from app.services.status_monitor import status_monitor
 from app.init_admin import create_initial_admin
+
+logger = logging.getLogger(__name__)
+
+
+def run_migrations():
+    """Run Alembic migrations on startup."""
+    from alembic.config import Config
+    from alembic import command
+
+    alembic_cfg = Config(str(Path(__file__).parent.parent / "alembic.ini"))
+    alembic_cfg.set_main_option("script_location", str(Path(__file__).parent.parent / "alembic"))
+
+    try:
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Database migrations completed successfully")
+    except Exception as e:
+        logger.error(f"Failed to run database migrations: {e}")
+        raise
 
 
 @asynccontextmanager
@@ -29,6 +48,9 @@ async def lifespan(app: FastAPI):
     # Create database directory
     db_path = Path(settings.database_url.replace("sqlite+aiosqlite:///", ""))
     db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Run Alembic migrations before initializing the database
+    run_migrations()
 
     await init_db()
     async with async_session() as db:
