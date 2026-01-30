@@ -25,8 +25,8 @@ dist/
 *.swp
 
 # Data
-data/videos/*.mp4
-data/db/*.db
+data
+
 
 backend/data/
 
