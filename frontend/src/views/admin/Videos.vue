@@ -49,6 +49,79 @@
       </el-table-column>
     </el-table>
 
+    <!-- Mobile Card Layout -->
+    <div class="mobile-video-cards" v-loading="loading">
+      <div
+        v-for="video in videos"
+        :key="video.id"
+        class="video-card"
+      >
+        <div class="video-card-header">
+          <div class="video-card-title">
+            <div class="video-card-name">{{ video.title }}</div>
+            <div class="video-card-id">ID: {{ video.id }}</div>
+          </div>
+          <el-tag :type="video.file_type === 'video' ? 'primary' : 'success'" size="small">
+            {{ video.file_type === 'video' ? '视频' : '音频' }}
+          </el-tag>
+        </div>
+
+        <div class="video-card-row" v-if="video.category">
+          <span class="video-card-label">分类</span>
+          <el-tag size="small">{{ video.category.name }}</el-tag>
+        </div>
+
+        <div class="video-card-row" v-if="video.tags && video.tags.length > 0">
+          <span class="video-card-label">标签</span>
+          <div class="video-card-tags">
+            <el-tag
+              v-for="tag in video.tags"
+              :key="tag.id"
+              size="small"
+              type="info"
+            >
+              {{ tag.name }}
+            </el-tag>
+          </div>
+        </div>
+
+        <div class="video-card-meta">
+          <span class="video-card-meta-item">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            {{ formatDuration(video.duration) }}
+          </span>
+          <span class="video-card-meta-item">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
+              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ formatSize(video.file_size) }}
+          </span>
+          <span class="video-card-meta-item">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
+              <path d="M1 12S5 4 12 4s11 8 11 8-5 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ video.view_count }}
+          </span>
+        </div>
+
+        <div class="video-card-time">{{ formatTime(video.created_at) }}</div>
+
+        <div class="video-card-actions">
+          <el-button size="small" type="primary" @click="handleEdit(video)">编辑</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(video)">删除</el-button>
+        </div>
+      </div>
+
+      <div v-if="videos.length === 0 && !loading" class="empty-state">
+        <p>暂无视频</p>
+      </div>
+    </div>
+
     <!-- Edit Dialog -->
     <el-dialog v-model="showEditDialog" title="编辑视频" width="500px">
       <el-form :model="editForm" label-width="80px">
@@ -354,5 +427,137 @@ onMounted(() => {
 
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  /* Hide default table on mobile */
+  :deep(.el-table) {
+    display: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-video-cards {
+    display: none !important;
+  }
+}
+
+/* Mobile Card Layout */
+@media (max-width: 768px) {
+  .mobile-video-cards {
+    display: block !important;
+  }
+
+  .video-card {
+    background: rgba(15, 20, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .video-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .video-card-title {
+    flex: 1;
+    min-width: 0;
+    padding-right: 12px;
+  }
+
+  .video-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .video-card-id {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--font-mono);
+  }
+
+  .video-card-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .video-card-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    min-width: 50px;
+    padding-top: 2px;
+  }
+
+  .video-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .video-card-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .video-card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .video-card-meta-item svg {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .video-card-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 10px;
+  }
+
+  .video-card-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .video-card-actions .el-button {
+    flex: 1;
+  }
 }
 </style>

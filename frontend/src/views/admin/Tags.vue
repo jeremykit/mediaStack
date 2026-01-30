@@ -28,6 +28,28 @@
       </el-table-column>
     </el-table>
 
+    <!-- Mobile Card Layout -->
+    <div class="mobile-tag-cards" v-loading="loading">
+      <div
+        v-for="tag in tags"
+        :key="tag.id"
+        class="tag-card"
+      >
+        <div class="tag-card-header">
+          <el-tag>{{ tag.name }}</el-tag>
+          <span class="tag-card-count">使用 {{ tag.video_count }} 次</span>
+        </div>
+        <div class="tag-card-time">{{ formatDate(tag.created_at) }}</div>
+        <div class="tag-card-actions">
+          <el-button size="small" type="danger" @click="deleteTag(tag)" style="width: 100%">删除</el-button>
+        </div>
+      </div>
+
+      <div v-if="tags.length === 0 && !loading" class="empty-state">
+        <p>暂无标签</p>
+      </div>
+    </div>
+
     <!-- Add Dialog -->
     <el-dialog v-model="showAddDialog" title="新增标签" width="400px">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
@@ -245,5 +267,108 @@ onMounted(loadTags)
 
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .page-header .el-button {
+    width: 100%;
+  }
+
+  /* Hide default table on mobile */
+  :deep(.el-table) {
+    display: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-tag-cards {
+    display: none !important;
+  }
+}
+
+/* Mobile Card Layout */
+@media (max-width: 768px) {
+  .mobile-tag-cards {
+    display: block !important;
+  }
+
+  .tag-card {
+    background: rgba(15, 20, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .tag-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .tag-card-count {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .tag-card-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 10px;
+  }
+
+  .tag-card-actions {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 10px;
+  }
+
+  /* Dialog mobile styles */
+  :deep(.el-dialog) {
+    width: 90vw !important;
+    max-width: 400px;
+  }
+}
+
+/* ==================== Dialog Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  :deep(.el-dialog) {
+    width: 90vw !important;
+    max-width: 400px;
+  }
+
+  :deep(.el-dialog__header) {
+    padding: 16px;
+  }
+
+  :deep(.el-dialog__body) {
+    padding: 12px 16px;
+  }
+
+  :deep(.el-dialog__footer) {
+    padding: 12px 16px 16px;
+  }
+
+  :deep(.el-form-item__label) {
+    font-size: 14px;
+  }
 }
 </style>

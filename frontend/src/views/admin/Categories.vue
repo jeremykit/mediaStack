@@ -26,6 +26,30 @@
       </el-table-column>
     </el-table>
 
+    <!-- Mobile Card Layout -->
+    <div class="mobile-category-cards" v-loading="loading">
+      <div
+        v-for="category in categories"
+        :key="category.id"
+        class="category-card"
+      >
+        <div class="category-card-header">
+          <span class="category-card-name">{{ category.name }}</span>
+          <span class="category-card-meta">排序: {{ category.sort_order }}</span>
+        </div>
+        <div class="category-card-meta">{{ category.video_count }} 个视频</div>
+        <div class="category-card-time">{{ formatDate(category.created_at) }}</div>
+        <div class="category-card-actions">
+          <el-button size="small" @click="editCategory(category)">编辑</el-button>
+          <el-button size="small" type="danger" @click="deleteCategory(category)">删除</el-button>
+        </div>
+      </div>
+
+      <div v-if="categories.length === 0 && !loading" class="empty-state">
+        <p>暂无分类</p>
+      </div>
+    </div>
+
     <!-- Add/Edit Dialog -->
     <el-dialog
       v-model="showDialog"
@@ -269,5 +293,105 @@ onMounted(loadCategories)
 
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .page-header .el-button {
+    width: 100%;
+  }
+
+  /* Hide default table on mobile */
+  :deep(.el-table) {
+    display: none;
+  }
+
+  /* Mobile cards */
+  .mobile-category-cards {
+    display: block !important;
+  }
+
+  .category-card {
+    background: rgba(15, 20, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .category-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .category-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .category-card-meta {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 10px;
+  }
+
+  .category-card-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .category-card-actions .el-button {
+    flex: 1;
+  }
+
+  /* Dialog mobile styles */
+  :deep(.el-dialog) {
+    width: 90vw !important;
+    max-width: 400px;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-category-cards {
+    display: none !important;
+  }
+}
+
+/* ==================== Dialog Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  :deep(.el-dialog) {
+    width: 90vw !important;
+    max-width: 400px;
+  }
+
+  :deep(.el-dialog__header) {
+    padding: 16px;
+  }
+
+  :deep(.el-dialog__body) {
+    padding: 12px 16px;
+  }
+
+  :deep(.el-dialog__footer) {
+    padding: 12px 16px 16px;
+  }
+
+  :deep(.el-form-item__label) {
+    font-size: 14px;
+  }
 }
 </style>

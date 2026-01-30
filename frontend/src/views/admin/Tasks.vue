@@ -43,6 +43,62 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- Mobile Card Layout -->
+    <div class="mobile-task-cards" v-loading="loading">
+      <div
+        v-for="task in tasks"
+        :key="task.id"
+        class="task-card"
+      >
+        <div class="task-card-header">
+          <div class="task-card-title">
+            <div class="task-card-name">{{ task.source_name || '未知来源' }}</div>
+            <div class="task-card-id">ID: {{ task.id }}</div>
+          </div>
+          <el-tag :type="statusType(task.status)">{{ statusText(task.status) }}</el-tag>
+        </div>
+
+        <div class="task-card-row" v-if="task.source?.category">
+          <span class="task-card-label">分类</span>
+          <el-tag size="small">{{ task.source.category.name }}</el-tag>
+        </div>
+
+        <div class="task-card-row">
+          <span class="task-card-label">开始</span>
+          <span class="task-card-value">{{ formatTime(task.started_at) }}</span>
+        </div>
+
+        <div class="task-card-row">
+          <span class="task-card-label">结束</span>
+          <span class="task-card-value">{{ formatTime(task.ended_at) }}</span>
+        </div>
+
+        <div class="task-card-row">
+          <span class="task-card-label">时长</span>
+          <span class="task-card-value">{{ formatDuration(task.duration) }}</span>
+        </div>
+
+        <div class="task-card-row" v-if="task.file_size">
+          <span class="task-card-label">大小</span>
+          <span class="task-card-value">{{ formatSize(task.file_size) }}</span>
+        </div>
+
+        <div class="task-card-actions" v-if="task.status === 'recording'">
+          <el-button
+            type="danger"
+            size="small"
+            @click="handleStop(task)"
+            :loading="task.stopping"
+            style="width: 100%"
+          >停止录制</el-button>
+        </div>
+      </div>
+
+      <div v-if="tasks.length === 0 && !loading" class="empty-state">
+        <p>暂无录制任务</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -257,5 +313,111 @@ onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .page-header .el-button {
+    width: 100%;
+  }
+
+  /* Hide default table on mobile */
+  :deep(.el-table) {
+    display: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-task-cards {
+    display: none !important;
+  }
+}
+
+/* Mobile Card Layout */
+@media (max-width: 768px) {
+  .mobile-task-cards {
+    display: block !important;
+  }
+
+  .task-card {
+    background: rgba(15, 20, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .task-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .task-card-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .task-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .task-card-id {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--font-mono);
+  }
+
+  .task-card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .task-card-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .task-card-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    min-width: 50px;
+  }
+
+  .task-card-value {
+    flex: 1;
+    color: #e4e7eb;
+  }
+
+  .task-card-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
 }
 </style>

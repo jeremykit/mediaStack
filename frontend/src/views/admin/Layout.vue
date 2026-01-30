@@ -1,7 +1,37 @@
 <template>
   <div class="admin-layout">
+    <!-- Mobile Menu Overlay -->
+    <div
+      v-if="sidebarOpen"
+      class="sidebar-overlay"
+      @click="closeSidebar"
+    ></div>
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+      <button class="menu-toggle" @click="toggleSidebar" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="mobile-brand">
+        <svg class="mobile-logo-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="40" height="40" rx="8" fill="url(#logo-gradient-mobile)" />
+          <path d="M16 18L24 14L32 18V30L24 34L16 30V18Z" stroke="white" stroke-width="2" stroke-linejoin="round" />
+          <circle cx="24" cy="24" r="3" fill="white" />
+          <defs>
+            <linearGradient id="logo-gradient-mobile" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#E94560" />
+              <stop offset="1" stop-color="#8B5CF6" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="mobile-brand-name">MediaStack</span>
+      </div>
+    </div>
+
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" :class="{ 'sidebar-open': sidebarOpen }">
       <!-- Logo & Brand -->
       <div class="brand-section">
         <div class="logo-container">
@@ -122,11 +152,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, type VNode } from 'vue'
+import { computed, h, ref, type VNode } from 'vue'
 import { useRoute } from 'vue-router'
 import SystemStatus from '../../components/SystemStatus.vue'
 
 const route = useRoute()
+
+// Mobile sidebar state
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+const closeSidebar = () => {
+  sidebarOpen.value = false
+}
+
+// Close sidebar when route changes on mobile
+import { watch } from 'vue'
+watch(() => route.path, () => {
+  if (window.innerWidth < 768) {
+    closeSidebar()
+  }
+})
 
 // Menu Item Type
 interface MenuItem {
@@ -608,5 +657,171 @@ const currentPageTitle = computed(() => {
 .page-fade-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* ==================== Mobile Responsive ==================== */
+
+@media (max-width: 768px) {
+  /* Mobile Header */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(15, 20, 35, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .menu-toggle {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: all 0.2s ease;
+  }
+
+  .menu-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .menu-toggle svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-logo-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .mobile-brand-name {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Sidebar Overlay */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 150;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 200;
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* Brand Section - hide on mobile since we have mobile header */
+  .sidebar .brand-section {
+    padding-top: 60px;
+  }
+
+  /* Main Container */
+  .main-container {
+    padding-top: 60px;
+  }
+
+  /* Top Header - hide on mobile */
+  .top-header {
+    display: none;
+  }
+
+  /* Page Content */
+  .page-content {
+    padding: 16px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  /* Nav items - larger touch targets */
+  .nav-item {
+    padding: 14px 16px;
+    margin: 2px 8px;
+  }
+
+  .nav-section-title {
+    padding: 0 16px 8px;
+  }
+
+  /* Hide user info text on mobile */
+  .user-info {
+    display: none;
+  }
+
+  .user-profile {
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-header {
+    display: none;
+  }
+
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+  .page-content {
+    padding: 12px;
+  }
+
+  .mobile-brand-name {
+    font-size: 14px;
+  }
 }
 </style>

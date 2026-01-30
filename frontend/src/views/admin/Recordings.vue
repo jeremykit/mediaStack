@@ -123,6 +123,89 @@
       </el-table-column>
     </el-table>
 
+    <!-- Mobile Card Layout -->
+    <div class="mobile-recording-cards" v-loading="loading">
+      <!-- Mobile tabs -->
+      <div class="mobile-tabs">
+        <div
+          v-for="tab in mobileTabs"
+          :key="tab.value"
+          class="mobile-tab"
+          :class="{ active: activeTab === tab.value }"
+          @click="activeTab = tab.value; handleTabChange()"
+        >
+          {{ tab.label }}
+          <span v-if="tab.badge && tab.badge > 0" class="mobile-tab-badge">{{ tab.badge }}</span>
+        </div>
+      </div>
+
+      <div
+        v-for="video in videos"
+        :key="video.id"
+        class="recording-card"
+      >
+        <div class="recording-card-header">
+          <div class="recording-card-title">
+            <div class="recording-card-name">{{ video.title }}</div>
+            <div class="recording-card-id">ID: {{ video.id }}</div>
+          </div>
+          <el-checkbox
+            :model-value="selectedIds.includes(video.id)"
+            @change="toggleSelection(video.id)"
+          ></el-checkbox>
+        </div>
+
+        <div class="recording-card-thumbnail" v-if="video.thumbnail">
+          <img :src="video.thumbnail" alt="封面" />
+        </div>
+
+        <div class="recording-card-meta">
+          <el-tag :type="getStatusType(video.status)" size="small">
+            {{ getStatusLabel(video.status) }}
+          </el-tag>
+          <el-tag :type="video.file_type === 'video' ? 'primary' : 'success'" size="small">
+            {{ video.file_type === 'video' ? '视频' : '音频' }}
+          </el-tag>
+          <span class="recording-card-duration">{{ formatDuration(video.duration) }}</span>
+          <span class="recording-card-size">{{ formatSize(video.file_size) }}</span>
+        </div>
+
+        <div class="recording-card-row" v-if="video.category">
+          <span class="recording-card-label">分类</span>
+          <el-tag size="small">{{ video.category.name }}</el-tag>
+        </div>
+
+        <div class="recording-card-time">{{ formatTime(video.created_at) }}</div>
+
+        <div class="recording-card-actions">
+          <el-button size="small" type="primary" @click="handleEdit(video)">编辑</el-button>
+          <el-button
+            v-if="video.source_type === 'recorded' && video.file_type === 'video'"
+            size="small"
+            type="warning"
+            @click="handleTrim(video)"
+          >裁剪</el-button>
+          <el-button
+            v-if="video.status !== 'published'"
+            size="small"
+            type="success"
+            @click="handlePublish(video)"
+          >发布</el-button>
+          <el-button
+            v-else
+            size="small"
+            type="warning"
+            @click="handleOffline(video)"
+          >下架</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(video)">删除</el-button>
+        </div>
+      </div>
+
+      <div v-if="videos.length === 0 && !loading" class="empty-state">
+        <p>暂无录制视频</p>
+      </div>
+    </div>
+
     <!-- Edit Dialog -->
     <el-dialog v-model="showEditDialog" title="编辑视频" width="800px" top="5vh">
       <el-tabs v-model="editActiveTab">
@@ -373,6 +456,13 @@ const pendingCount = computed(() => {
   return allVideos.value.filter(v => v.status === 'pending').length
 })
 
+const mobileTabs = computed(() => [
+  { value: 'all', label: '全部' },
+  { value: 'pending', label: '待审核', badge: pendingCount.value },
+  { value: 'published', label: '已发布' },
+  { value: 'offline', label: '已下架' }
+])
+
 const loadVideos = async () => {
   loading.value = true
   try {
@@ -440,6 +530,15 @@ const loadAudioInfo = async (videoId: number) => {
 
 const handleSelectionChange = (selection: Video[]) => {
   selectedIds.value = selection.map(v => v.id)
+}
+
+const toggleSelection = (id: number) => {
+  const index = selectedIds.value.indexOf(id)
+  if (index > -1) {
+    selectedIds.value.splice(index, 1)
+  } else {
+    selectedIds.value.push(id)
+  }
 }
 
 const handleEdit = (row: Video) => {
@@ -978,5 +1077,274 @@ onMounted(() => {
 
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .header-actions .el-button {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  /* Hide default tabs and table on mobile */
+  :deep(.el-tabs) {
+    display: none;
+  }
+
+  :deep(.el-table) {
+    display: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-recording-cards {
+    display: none !important;
+  }
+}
+
+/* Mobile Card Layout */
+@media (max-width: 768px) {
+  .mobile-recording-cards {
+    display: block !important;
+  }
+
+  .mobile-tabs {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-tab {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .mobile-tab.active {
+    background: rgba(233, 69, 96, 0.2);
+    color: #E94560;
+  }
+
+  .mobile-tab-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #E94560;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+  }
+
+  .recording-card {
+    background: rgba(15, 20, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .recording-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .recording-card-title {
+    flex: 1;
+    min-width: 0;
+    padding-right: 12px;
+  }
+
+  .recording-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .recording-card-id {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--font-mono);
+  }
+
+  .recording-card-thumbnail {
+    width: 100%;
+    height: 160px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .recording-card-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .recording-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .recording-card-duration,
+  .recording-card-size {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .recording-card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .recording-card-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    min-width: 50px;
+  }
+
+  .recording-card-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 10px;
+  }
+
+  .recording-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .recording-card-actions .el-button {
+    flex: 0 1 auto;
+    min-width: 60px;
+  }
+}
+
+/* ==================== Dialog Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  /* Remove dialog styles that conflict with global theme - use global instead */
+
+  /* Dialog tab content specific fixes */
+  :deep(.el-dialog .el-tabs__content) {
+    padding: 12px 0 !important;
+  }
+
+  :deep(.el-dialog .el-tab-pane) {
+    padding: 0 4px !important;
+  }
+
+  /* Thumbnail section */
+  .thumbnail-section {
+    padding: 12px 0 !important;
+  }
+
+  .current-thumbnail h4 {
+    font-size: 14px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .thumbnail-preview {
+    padding: 12px !important;
+    min-height: 120px !important;
+  }
+
+  .no-thumbnail {
+    font-size: 12px !important;
+  }
+
+  .thumbnail-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .capture-at-section h4 {
+    font-size: 14px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .capture-at-form {
+    flex-wrap: wrap !important;
+  }
+
+  .capture-hint {
+    font-size: 11px !important;
+  }
+
+  /* Audio section */
+  .audio-section {
+    padding: 12px 0 !important;
+  }
+
+  .audio-available,
+  .audio-task,
+  .no-audio {
+    margin-bottom: 12px !important;
+  }
+
+  .audio-actions {
+    margin-top: 12px !important;
+  }
+
+  .extract-form {
+    margin-top: 12px !important;
+  }
+
+  .extract-form :deep(.el-form) {
+    display: block !important;
+  }
+
+  .extract-form :deep(.el-form-item) {
+    display: block !important;
+    margin-bottom: 12px !important;
+  }
+
+  .extract-form :deep(.el-form-item__content) {
+    width: 100% !important;
+  }
 }
 </style>

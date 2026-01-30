@@ -506,4 +506,70 @@ onMounted(() => {
 :deep(.el-progress-bar__inner) {
   background: linear-gradient(135deg, #E94560 0%, #8B5CF6 100%);
 }
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .upload-area {
+    padding: 40px 16px;
+  }
+
+  .upload-text {
+    font-size: 14px;
+  }
+
+  .upload-hint {
+    font-size: 11px;
+  }
+
+  .upload-info {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .filename {
+    font-size: 13px;
+    word-break: break-all;
+  }
+
+  .upload-actions {
+    flex-wrap: wrap;
+  }
+
+  .upload-actions .el-button {
+    flex: 1;
+  }
+
+  .complete-form :deep(.el-form-item__label) {
+    width: 80px !important;
+  }
+
+  /* Table on mobile */
+  :deep(.el-table) {
+    font-size: 12px;
+  }
+
+  :deep(.el-table th),
+  :deep(.el-table td) {
+    padding: 8px 4px;
+  }
+
+  /* Card styles for mobile */
+  :deep(.el-card) {
+    background: rgba(15, 20, 35, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  :deep(.el-card__header) {
+    background: rgba(15, 20, 35, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  :deep(.el-card__body) {
+    padding: 16px;
+  }
+}
 </style>

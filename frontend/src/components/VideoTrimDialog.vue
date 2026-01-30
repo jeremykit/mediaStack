@@ -449,4 +449,97 @@ watch(visible, (newVal) => {
   height: 16px;
   border: 2px solid #667eea;
 }
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .trim-dialog-content {
+    padding: 0 !important;
+  }
+
+  .video-preview-section {
+    margin-bottom: 16px !important;
+  }
+
+  .video-preview-section h4 {
+    font-size: 14px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .video-player {
+    max-height: 240px !important;
+    width: 100% !important;
+  }
+
+  .timeline-section {
+    margin-bottom: 16px !important;
+  }
+
+  .timeline-section h4 {
+    font-size: 14px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .timeline-slider {
+    padding: 0 8px !important;
+  }
+
+  .timeline-labels {
+    font-size: 11px !important;
+    padding: 4px 8px 0 !important;
+  }
+
+  .time-inputs-section {
+    margin-bottom: 16px !important;
+  }
+
+  /* Form items full width */
+  .el-form-item {
+    margin-bottom: 12px !important;
+  }
+
+  .el-form-item__label {
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .el-input,
+  .el-input__wrapper {
+    width: 100% !important;
+  }
+
+  /* Row/Col full width */
+  .el-row {
+    display: block !important;
+  }
+
+  .el-col {
+    width: 100% !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Checkbox */
+  .el-checkbox {
+    display: flex !important;
+    width: 100% !important;
+    margin-bottom: 8px !important;
+    margin-left: 0 !important;
+  }
+
+  .el-checkbox__label {
+    font-size: 13px !important;
+  }
+
+  /* Task status */
+  .task-status-section {
+    margin-top: 12px !important;
+  }
+
+  .el-alert {
+    font-size: 12px !important;
+  }
+
+  .el-alert__title {
+    font-size: 12px !important;
+  }
+}
 </style>

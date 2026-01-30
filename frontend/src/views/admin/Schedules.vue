@@ -30,6 +30,52 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- Mobile Card Layout -->
+    <div class="mobile-schedule-cards" v-loading="loading">
+      <div
+        v-for="schedule in schedules"
+        :key="schedule.id"
+        class="schedule-card"
+      >
+        <div class="schedule-card-header">
+          <div class="schedule-card-title">
+            <div class="schedule-card-name">{{ schedule.source_name || '未知来源' }}</div>
+            <div class="schedule-card-id">ID: {{ schedule.id }}</div>
+          </div>
+          <el-switch
+            v-model="schedule.is_active"
+            :loading="schedule._switching"
+            @change="handleToggleActive(schedule)"
+          />
+        </div>
+
+        <div class="schedule-card-row">
+          <span class="schedule-card-label">Cron</span>
+          <span class="schedule-card-value schedule-card-cron">{{ schedule.cron_expr }}</span>
+        </div>
+
+        <div class="schedule-card-row">
+          <span class="schedule-card-label">上次</span>
+          <span class="schedule-card-value">{{ formatTime(schedule.last_run_at) }}</span>
+        </div>
+
+        <div class="schedule-card-row">
+          <span class="schedule-card-label">下次</span>
+          <span class="schedule-card-value">{{ formatTime(schedule.next_run_at) }}</span>
+        </div>
+
+        <div class="schedule-card-actions">
+          <el-button size="small" type="primary" @click="handleEdit(schedule)">编辑</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(schedule)">删除</el-button>
+        </div>
+      </div>
+
+      <div v-if="schedules.length === 0 && !loading" class="empty-state">
+        <p>暂无定时计划</p>
+      </div>
+    </div>
+
     <ScheduleForm v-model="formVisible" :schedule="currentSchedule" @success="loadSchedules" />
   </div>
 </template>
@@ -40,7 +86,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { schedulesApi, type Schedule } from '../../api/schedules'
 import ScheduleForm from '../../components/ScheduleForm.vue'
 
-const schedules = ref<Schedule[]>([])
+const schedules = ref<(Schedule & { _switching?: boolean })[]>([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentSchedule = ref<Schedule | null>(null)
@@ -198,5 +244,124 @@ onMounted(loadSchedules)
 
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .page-header .el-button {
+    width: 100%;
+  }
+
+  /* Hide default table on mobile */
+  :deep(.el-table) {
+    display: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-schedule-cards {
+    display: none !important;
+  }
+}
+
+/* Mobile Card Layout */
+@media (max-width: 768px) {
+  .mobile-schedule-cards {
+    display: block !important;
+  }
+
+  .schedule-card {
+    background: rgba(15, 20, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .schedule-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .schedule-card-title {
+    flex: 1;
+    min-width: 0;
+    padding-right: 12px;
+  }
+
+  .schedule-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .schedule-card-id {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--font-mono);
+  }
+
+  .schedule-card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .schedule-card-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .schedule-card-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    min-width: 50px;
+  }
+
+  .schedule-card-value {
+    flex: 1;
+    color: #e4e7eb;
+  }
+
+  .schedule-card-cron {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #E94560;
+  }
+
+  .schedule-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .schedule-card-actions .el-button {
+    flex: 1;
+  }
 }
 </style>

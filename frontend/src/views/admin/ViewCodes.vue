@@ -60,6 +60,59 @@
       </el-table-column>
     </el-table>
 
+    <!-- Mobile Card Layout -->
+    <div class="mobile-viewcode-cards" v-loading="loading">
+      <div
+        v-for="code in viewCodes"
+        :key="code.id"
+        class="viewcode-card"
+      >
+        <div class="viewcode-card-header">
+          <div class="viewcode-card-code">
+            <code>{{ code.code }}</code>
+            <el-button size="small" text @click="copyCode(code.code)">
+              <el-icon><CopyDocument /></el-icon>
+            </el-button>
+          </div>
+          <el-switch
+            v-model="code.is_active"
+            @change="toggleActive(code)"
+          />
+        </div>
+
+        <div class="viewcode-card-row" v-if="code.category_names.length > 0">
+          <span class="viewcode-card-label">分类</span>
+          <div class="viewcode-card-tags">
+            <el-tag
+              v-for="name in code.category_names"
+              :key="name"
+              size="small"
+            >
+              {{ name }}
+            </el-tag>
+          </div>
+        </div>
+
+        <div class="viewcode-card-row">
+          <span class="viewcode-card-label">过期</span>
+          <span class="viewcode-card-value">
+            {{ code.expires_at ? formatDate(code.expires_at) : '永不过期' }}
+          </span>
+        </div>
+
+        <div class="viewcode-card-time">{{ formatDate(code.created_at) }}</div>
+
+        <div class="viewcode-card-actions">
+          <el-button size="small" @click="editViewCode(code)">编辑</el-button>
+          <el-button size="small" type="danger" @click="deleteViewCode(code)">删除</el-button>
+        </div>
+      </div>
+
+      <div v-if="viewCodes.length === 0 && !loading" class="empty-state">
+        <p>暂无观看码</p>
+      </div>
+    </div>
+
     <!-- Add/Edit Dialog -->
     <el-dialog
       v-model="showDialog"
@@ -425,5 +478,132 @@ onMounted(() => {
 
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .page-header .el-button {
+    width: 100%;
+  }
+
+  /* Hide default table on mobile */
+  :deep(.el-table) {
+    display: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-viewcode-cards {
+    display: none !important;
+  }
+}
+
+/* Mobile Card Layout */
+@media (max-width: 768px) {
+  .mobile-viewcode-cards {
+    display: block !important;
+  }
+
+  .viewcode-card {
+    background: rgba(15, 20, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .viewcode-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .viewcode-card-code {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .viewcode-card-code code {
+    font-family: var(--font-mono);
+    background: rgba(139, 92, 246, 0.2);
+    color: #8B5CF6;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    word-break: break-all;
+  }
+
+  .viewcode-card-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .viewcode-card-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    min-width: 50px;
+    padding-top: 2px;
+  }
+
+  .viewcode-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .viewcode-card-value {
+    flex: 1;
+    font-size: 14px;
+    color: #e4e7eb;
+  }
+
+  .viewcode-card-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 10px;
+  }
+
+  .viewcode-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .viewcode-card-actions .el-button {
+    flex: 1;
+  }
+
+  /* Dialog mobile styles */
+  :deep(.el-dialog) {
+    width: 90vw !important;
+    max-width: 500px;
+  }
 }
 </style>

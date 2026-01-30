@@ -144,4 +144,26 @@ onUnmounted(() => {
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
 }
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .system-page h2 {
+    font-size: 18px;
+  }
+
+  :deep(.el-col-8) {
+    width: 100% !important;
+    max-width: 100%;
+    flex: 0 0 100%;
+    margin-bottom: 12px;
+  }
+
+  .system-page :deep(.el-card) {
+    margin-bottom: 12px;
+  }
+
+  .system-page :deep(.el-progress) {
+    max-width: 200px;
+  }
+}
 </style>

@@ -85,6 +85,89 @@
       </el-table-column>
     </el-table>
 
+    <!-- Mobile Card Layout -->
+    <div class="mobile-source-cards" v-loading="loading">
+      <div
+        v-for="source in sources"
+        :key="source.id"
+        class="source-card"
+      >
+        <div class="source-card-header">
+          <div class="source-card-title">
+            <div class="source-card-name">{{ source.name }}</div>
+            <div class="source-card-id">ID: {{ source.id }}</div>
+          </div>
+          <div class="source-card-actions">
+            <el-checkbox
+              :model-value="selectedSources.includes(source)"
+              @change="toggleSourceSelection(source)"
+            ></el-checkbox>
+          </div>
+        </div>
+
+        <div class="source-card-row">
+          <span class="source-card-label">协议</span>
+          <el-tag size="small">{{ source.protocol.toUpperCase() }}</el-tag>
+        </div>
+
+        <div class="source-card-row">
+          <span class="source-card-label">分类</span>
+          <el-tag v-if="source.category" size="small">{{ source.category.name }}</el-tag>
+          <el-tag v-else size="small" type="info">未分类</el-tag>
+        </div>
+
+        <div class="source-card-row">
+          <span class="source-card-label">地址</span>
+          <span class="source-card-url">{{ source.url }}</span>
+        </div>
+
+        <div class="source-card-statuses">
+          <el-tag :type="source.is_online ? 'success' : 'danger'" size="small">
+            {{ source.is_online ? '在线' : '离线' }}
+          </el-tag>
+          <el-tag v-if="source.is_recording" type="warning" size="small">正在录制</el-tag>
+          <el-tag v-else type="info" size="small">未录制</el-tag>
+          <el-tag :type="source.is_active ? 'success' : 'info'" size="small">
+            {{ source.is_active ? '启用' : '禁用' }}
+          </el-tag>
+          <el-tag size="small">保留{{ source.retention_days }}天</el-tag>
+        </div>
+
+        <div class="source-card-actions" style="margin-top: 12px;">
+          <el-button size="small" @click="handleCheckStatus(source)" :loading="source.checking">
+            检测
+          </el-button>
+          <el-button
+            v-if="!source.is_recording"
+            size="small"
+            type="success"
+            @click="handleStartRecording(source)"
+            :loading="source.starting"
+            :disabled="!source.is_online"
+          >录制</el-button>
+          <el-button
+            v-else
+            size="small"
+            type="danger"
+            @click="handleStopRecording(source)"
+            :loading="source.stopping"
+          >停止</el-button>
+          <el-button
+            size="small"
+            type="primary"
+            @click="handleEdit(source)"
+            :disabled="source.is_recording"
+          >编辑</el-button>
+          <el-button
+            size="small"
+            type="danger"
+            @click="handleDelete(source)"
+            :disabled="source.is_recording"
+          >删除</el-button>
+        </div>
+      </div>
+    </div>
+
     <SourceForm v-model="formVisible" :source="currentSource" @success="loadSources" />
 
     <el-dialog v-model="showBulkCategoryDialog" title="批量设置分类" width="400px">
@@ -228,6 +311,15 @@ const loadCategories = async () => {
 
 const handleSelectionChange = (selection: Source[]) => {
   selectedSources.value = selection
+}
+
+const toggleSourceSelection = (source: Source) => {
+  const index = selectedSources.value.findIndex(s => s.id === source.id)
+  if (index > -1) {
+    selectedSources.value.splice(index, 1)
+  } else {
+    selectedSources.value.push(source)
+  }
 }
 
 const handleBulkUpdateCategory = async () => {
@@ -411,5 +503,158 @@ onUnmounted(() => {
 
 :deep(.el-loading-spinner .circular) {
   stroke: #E94560;
+}
+
+/* ==================== Mobile Responsive ==================== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
+
+  .page-header > div {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .page-header .el-button {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  /* Hide default table on mobile, show card layout */
+  :deep(.el-table) {
+    display: none;
+  }
+
+  /* Mobile card container */
+  .sources-page::v-deep(.el-table) + *,
+  .sources-page > :deep(.el-table) {
+    display: none;
+  }
+}
+
+/* Mobile card layout - shown only on mobile */
+@media (max-width: 768px) {
+  .sources-page::after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+
+  .mobile-source-cards {
+    display: block !important;
+  }
+
+  .source-card {
+    background: rgba(15, 20, 35, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .source-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .source-card-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .source-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .source-card-id {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--font-mono);
+  }
+
+  .source-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .source-card-actions .el-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .source-card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .source-card-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .source-card-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    min-width: 60px;
+  }
+
+  .source-card-value {
+    flex: 1;
+    color: #e4e7eb;
+    word-break: break-all;
+  }
+
+  .source-card-url {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    word-break: break-all;
+  }
+
+  /* Status tags in cards */
+  .source-card-statuses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .source-card-statuses .el-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  /* Hide batch select on mobile */
+  :deep(.el-table__column--selection .el-checkbox) {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-source-cards {
+    display: none !important;
+  }
 }
 </style>
