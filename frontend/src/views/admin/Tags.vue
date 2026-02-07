@@ -2,13 +2,22 @@
   <div class="tags-page">
     <div class="page-header">
       <h2>标签管理</h2>
-      <el-button type="primary" @click="showAddDialog = true">
-        <el-icon><Plus /></el-icon>
-        新增标签
-      </el-button>
+      <div class="header-actions">
+        <el-button
+          v-if="selectedTags.length > 0"
+          type="danger"
+          @click="handleBulkDelete"
+          :loading="bulkDeleting"
+        >批量删除 ({{ selectedTags.length }})</el-button>
+        <el-button type="primary" @click="showAddDialog = true">
+          <el-icon><Plus /></el-icon>
+          新增标签
+        </el-button>
+      </div>
     </div>
 
-    <el-table :data="tags" v-loading="loading" stripe>
+    <el-table :data="tags" v-loading="loading" stripe @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="name" label="标签名称">
         <template #default="{ row }">
@@ -19,11 +28,6 @@
       <el-table-column prop="created_at" label="创建时间" width="180">
         <template #default="{ row }">
           {{ formatDate(row.created_at) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="100" fixed="right">
-        <template #default="{ row }">
-          <el-button size="small" type="danger" @click="deleteTag(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -40,9 +44,6 @@
           <span class="tag-card-count">使用 {{ tag.video_count }} 次</span>
         </div>
         <div class="tag-card-time">{{ formatDate(tag.created_at) }}</div>
-        <div class="tag-card-actions">
-          <el-button size="small" type="danger" @click="deleteTag(tag)" style="width: 100%">删除</el-button>
-        </div>
       </div>
 
       <div v-if="tags.length === 0 && !loading" class="empty-state">
@@ -76,6 +77,8 @@ const loading = ref(false)
 const showAddDialog = ref(false)
 const submitting = ref(false)
 const formRef = ref<FormInstance>()
+const selectedTags = ref<Tag[]>([])
+const bulkDeleting = ref(false)
 
 const form = reactive({
   name: ''
@@ -104,20 +107,31 @@ const loadTags = async () => {
   }
 }
 
-const deleteTag = async (tag: Tag) => {
+const handleSelectionChange = (selection: Tag[]) => {
+  selectedTags.value = selection
+}
+
+const handleBulkDelete = async () => {
+  if (selectedTags.value.length === 0) return
+
   try {
     await ElMessageBox.confirm(
-      `确定要删除标签 "${tag.name}" 吗？`,
-      '确认删除',
+      `确定删除选中的 ${selectedTags.value.length} 个标签吗？`,
+      '批量删除',
       { type: 'warning' }
     )
-    await tagsApi.delete(tag.id)
+    bulkDeleting.value = true
+    const deletePromises = selectedTags.value.map(t => tagsApi.delete(t.id))
+    await Promise.allSettled(deletePromises)
     ElMessage.success('删除成功')
+    selectedTags.value = []
     loadTags()
   } catch (e: any) {
     if (e !== 'cancel') {
       ElMessage.error(e.response?.data?.detail || '删除失败')
     }
+  } finally {
+    bulkDeleting.value = false
   }
 }
 
@@ -159,6 +173,12 @@ onMounted(loadTags)
   font-weight: 600;
   color: #fff;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* Override Element Plus table styles for dark theme */

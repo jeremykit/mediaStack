@@ -1,7 +1,18 @@
 <template>
   <div class="videos-page">
-    <div class="page-header"><h2>视频管理</h2></div>
-    <el-table :data="videos" v-loading="loading" stripe>
+    <div class="page-header">
+      <h2>视频管理</h2>
+      <div class="header-actions">
+        <el-button
+          v-if="selectedVideos.length > 0"
+          type="danger"
+          @click="handleBulkDelete"
+          :loading="bulkDeleting"
+        >批量删除 ({{ selectedVideos.length }})</el-button>
+      </div>
+    </div>
+    <el-table :data="videos" v-loading="loading" stripe @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="id" label="ID" width="60" />
       <el-table-column prop="title" label="标题" show-overflow-tooltip min-width="150" />
       <el-table-column label="分类" width="120">
@@ -41,10 +52,9 @@
       <el-table-column prop="created_at" label="创建时间" width="160">
         <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="180" fixed="right">
+      <el-table-column label="操作" width="120" fixed="right">
         <template #default="{ row }">
           <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -113,7 +123,6 @@
 
         <div class="video-card-actions">
           <el-button size="small" type="primary" @click="handleEdit(video)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(video)">删除</el-button>
         </div>
       </div>
 
@@ -123,13 +132,20 @@
     </div>
 
     <!-- Edit Dialog -->
-    <el-dialog v-model="showEditDialog" title="编辑视频" width="500px">
+    <el-dialog v-model="showEditDialog" title="编辑视频" width="500px" :class="{ 'mobile-dialog': isMobile }">
       <el-form :model="editForm" label-width="80px">
         <el-form-item label="标题">
           <el-input v-model="editForm.title" />
         </el-form-item>
         <el-form-item label="分类">
-          <el-select v-model="editForm.category_id" placeholder="选择分类" clearable style="width: 100%">
+          <el-select
+            v-model="editForm.category_id"
+            placeholder="选择分类"
+            clearable
+            style="width: 100%"
+            :teleported="!isMobile"
+            :popper-class="{ 'mobile-select-dropdown': isMobile }"
+          >
             <el-option
               v-for="cat in categories"
               :key="cat.id"
@@ -144,6 +160,8 @@
             multiple
             placeholder="选择标签"
             style="width: 100%"
+            :teleported="!isMobile"
+            :popper-class="{ 'mobile-select-dropdown': isMobile }"
           >
             <el-option
               v-for="tag in tags"
@@ -163,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { videosApi, type Video } from '../../api/videos'
 import { categoriesApi, type Category } from '../../api/categories'
@@ -176,6 +194,14 @@ const loading = ref(false)
 const showEditDialog = ref(false)
 const saving = ref(false)
 const editingVideo = ref<Video | null>(null)
+const selectedVideos = ref<Video[]>([])
+const bulkDeleting = ref(false)
+
+// Mobile detection
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
 
 const editForm = reactive({
   title: '',
@@ -250,13 +276,32 @@ const saveEdit = async () => {
   }
 }
 
-const handleDelete = async (row: Video) => {
+const handleSelectionChange = (selection: Video[]) => {
+  selectedVideos.value = selection
+}
+
+const handleBulkDelete = async () => {
+  if (selectedVideos.value.length === 0) return
+
   try {
-    await ElMessageBox.confirm('确定要删除该视频吗？此操作将同时删除文件！', '提示', { type: 'warning' })
-    await videosApi.delete(row.id)
+    await ElMessageBox.confirm(
+      `确定删除选中的 ${selectedVideos.value.length} 个视频吗？此操作将同时删除文件！`,
+      '批量删除',
+      { type: 'warning' }
+    )
+    bulkDeleting.value = true
+    const deletePromises = selectedVideos.value.map(v => videosApi.delete(v.id))
+    await Promise.allSettled(deletePromises)
     ElMessage.success('删除成功')
+    selectedVideos.value = []
     loadVideos()
-  } catch (e: any) { if (e !== 'cancel') ElMessage.error(e.response?.data?.detail || '删除失败') }
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      ElMessage.error(e.response?.data?.detail || '删除失败')
+    }
+  } finally {
+    bulkDeleting.value = false
+  }
 }
 
 const formatDuration = (s: number | null) => {
@@ -277,6 +322,12 @@ onMounted(() => {
   loadVideos()
   loadCategories()
   loadTags()
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 </script>
 
@@ -297,6 +348,12 @@ onMounted(() => {
   font-weight: 600;
   color: #fff;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .text-muted {

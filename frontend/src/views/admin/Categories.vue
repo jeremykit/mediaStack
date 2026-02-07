@@ -2,13 +2,22 @@
   <div class="categories-page">
     <div class="page-header">
       <h2>分类管理</h2>
-      <el-button type="primary" @click="showAddDialog = true">
-        <el-icon><Plus /></el-icon>
-        新增分类
-      </el-button>
+      <div class="header-actions">
+        <el-button
+          v-if="selectedCategories.length > 0"
+          type="danger"
+          @click="handleBulkDelete"
+          :loading="bulkDeleting"
+        >批量删除 ({{ selectedCategories.length }})</el-button>
+        <el-button type="primary" @click="showAddDialog = true">
+          <el-icon><Plus /></el-icon>
+          新增分类
+        </el-button>
+      </div>
     </div>
 
-    <el-table :data="categories" v-loading="loading" stripe>
+    <el-table :data="categories" v-loading="loading" stripe @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="name" label="分类名称" />
       <el-table-column prop="sort_order" label="排序" width="100" />
@@ -18,10 +27,9 @@
           {{ formatDate(row.created_at) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="150" fixed="right">
+      <el-table-column label="操作" width="100" fixed="right">
         <template #default="{ row }">
           <el-button size="small" @click="editCategory(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="deleteCategory(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -41,7 +49,6 @@
         <div class="category-card-time">{{ formatDate(category.created_at) }}</div>
         <div class="category-card-actions">
           <el-button size="small" @click="editCategory(category)">编辑</el-button>
-          <el-button size="small" type="danger" @click="deleteCategory(category)">删除</el-button>
         </div>
       </div>
 
@@ -84,6 +91,8 @@ const showAddDialog = ref(false)
 const editingCategory = ref<Category | null>(null)
 const submitting = ref(false)
 const formRef = ref<FormInstance>()
+const selectedCategories = ref<Category[]>([])
+const bulkDeleting = ref(false)
 
 const showDialog = computed({
   get: () => showAddDialog.value || editingCategory.value !== null,
@@ -129,20 +138,31 @@ const editCategory = (category: Category) => {
   form.sort_order = category.sort_order
 }
 
-const deleteCategory = async (category: Category) => {
+const handleSelectionChange = (selection: Category[]) => {
+  selectedCategories.value = selection
+}
+
+const handleBulkDelete = async () => {
+  if (selectedCategories.value.length === 0) return
+
   try {
     await ElMessageBox.confirm(
-      `确定要删除分类 "${category.name}" 吗？`,
-      '确认删除',
+      `确定删除选中的 ${selectedCategories.value.length} 个分类吗？`,
+      '批量删除',
       { type: 'warning' }
     )
-    await categoriesApi.delete(category.id)
+    bulkDeleting.value = true
+    const deletePromises = selectedCategories.value.map(c => categoriesApi.delete(c.id))
+    await Promise.allSettled(deletePromises)
     ElMessage.success('删除成功')
+    selectedCategories.value = []
     loadCategories()
   } catch (e: any) {
     if (e !== 'cancel') {
       ElMessage.error(e.response?.data?.detail || '删除失败')
     }
+  } finally {
+    bulkDeleting.value = false
   }
 }
 
@@ -196,6 +216,12 @@ onMounted(loadCategories)
   font-weight: 600;
   color: #fff;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* Override Element Plus table styles for dark theme */

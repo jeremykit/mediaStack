@@ -2,9 +2,18 @@
   <div class="schedules-page">
     <div class="page-header">
       <h2>定时计划</h2>
-      <el-button type="primary" @click="handleAdd">添加定时计划</el-button>
+      <div class="header-actions">
+        <el-button
+          v-if="selectedSchedules.length > 0"
+          type="danger"
+          @click="handleBulkDelete"
+          :loading="bulkDeleting"
+        >批量删除 ({{ selectedSchedules.length }})</el-button>
+        <el-button type="primary" @click="handleAdd">添加定时计划</el-button>
+      </div>
     </div>
-    <el-table :data="schedules" v-loading="loading" stripe>
+    <el-table :data="schedules" v-loading="loading" stripe @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="source_name" label="直播源" width="100" show-overflow-tooltip />
       <el-table-column prop="cron_expr" label="Cron 表达式" width="150" />
@@ -26,7 +35,6 @@
       <el-table-column label="操作" fixed="right">
         <template #default="{ row }">
           <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -67,7 +75,6 @@
 
         <div class="schedule-card-actions">
           <el-button size="small" type="primary" @click="handleEdit(schedule)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(schedule)">删除</el-button>
         </div>
       </div>
 
@@ -90,6 +97,8 @@ const schedules = ref<(Schedule & { _switching?: boolean })[]>([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentSchedule = ref<Schedule | null>(null)
+const selectedSchedules = ref<Schedule[]>([])
+const bulkDeleting = ref(false)
 
 const loadSchedules = async () => {
   loading.value = true
@@ -114,14 +123,31 @@ const handleToggleActive = async (row: Schedule & { _switching?: boolean }) => {
   }
 }
 
-const handleDelete = async (row: Schedule) => {
+const handleSelectionChange = (selection: Schedule[]) => {
+  selectedSchedules.value = selection
+}
+
+const handleBulkDelete = async () => {
+  if (selectedSchedules.value.length === 0) return
+
   try {
-    await ElMessageBox.confirm('确定要删除该定时计划吗？', '提示', { type: 'warning' })
-    await schedulesApi.delete(row.id)
+    await ElMessageBox.confirm(
+      `确定删除选中的 ${selectedSchedules.value.length} 个定时计划吗？`,
+      '批量删除',
+      { type: 'warning' }
+    )
+    bulkDeleting.value = true
+    const deletePromises = selectedSchedules.value.map(s => schedulesApi.delete(s.id))
+    await Promise.allSettled(deletePromises)
     ElMessage.success('删除成功')
+    selectedSchedules.value = []
     loadSchedules()
   } catch (e: any) {
-    if (e !== 'cancel') ElMessage.error(e.response?.data?.detail || '删除失败')
+    if (e !== 'cancel') {
+      ElMessage.error(e.response?.data?.detail || '删除失败')
+    }
+  } finally {
+    bulkDeleting.value = false
   }
 }
 
@@ -147,6 +173,12 @@ onMounted(loadSchedules)
   font-weight: 600;
   color: #fff;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* Override Element Plus table styles for dark theme */

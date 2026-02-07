@@ -2,13 +2,22 @@
   <div class="view-codes-page">
     <div class="page-header">
       <h2>观看码管理</h2>
-      <el-button type="primary" @click="showAddDialog = true">
-        <el-icon><Plus /></el-icon>
-        新增观看码
-      </el-button>
+      <div class="header-actions">
+        <el-button
+          v-if="selectedViewCodes.length > 0"
+          type="danger"
+          @click="handleBulkDelete"
+          :loading="bulkDeleting"
+        >批量删除 ({{ selectedViewCodes.length }})</el-button>
+        <el-button type="primary" @click="showAddDialog = true">
+          <el-icon><Plus /></el-icon>
+          新增观看码
+        </el-button>
+      </div>
     </div>
 
-    <el-table :data="viewCodes" v-loading="loading" stripe>
+    <el-table :data="viewCodes" v-loading="loading" stripe @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="id" label="ID" width="60" />
       <el-table-column prop="code" label="观看码" width="150">
         <template #default="{ row }">
@@ -52,10 +61,9 @@
           {{ formatDate(row.created_at) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="150" fixed="right">
+      <el-table-column label="操作" width="100" fixed="right">
         <template #default="{ row }">
           <el-button size="small" @click="editViewCode(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="deleteViewCode(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -104,7 +112,6 @@
 
         <div class="viewcode-card-actions">
           <el-button size="small" @click="editViewCode(code)">编辑</el-button>
-          <el-button size="small" type="danger" @click="deleteViewCode(code)">删除</el-button>
         </div>
       </div>
 
@@ -118,6 +125,7 @@
       v-model="showDialog"
       :title="editingViewCode ? '编辑观看码' : '新增观看码'"
       width="500px"
+      :class="{ 'mobile-dialog': isMobile }"
     >
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <el-form-item label="观看码" prop="code" v-if="!editingViewCode">
@@ -134,6 +142,8 @@
             multiple
             placeholder="选择可访问的分类"
             style="width: 100%"
+            :teleported="!isMobile"
+            :popper-class="{ 'mobile-select-dropdown': isMobile }"
           >
             <el-option
               v-for="cat in categories"
@@ -149,6 +159,7 @@
             type="datetime"
             placeholder="留空表示永不过期"
             style="width: 100%"
+            :teleported="!isMobile"
           />
         </el-form-item>
         <el-form-item label="启用">
@@ -164,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Plus, CopyDocument } from '@element-plus/icons-vue'
 import { viewCodesApi, type ViewCode } from '../../api/viewCodes'
@@ -177,6 +188,14 @@ const showAddDialog = ref(false)
 const editingViewCode = ref<ViewCode | null>(null)
 const submitting = ref(false)
 const formRef = ref<FormInstance>()
+const selectedViewCodes = ref<ViewCode[]>([])
+const bulkDeleting = ref(false)
+
+// Mobile detection
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
 
 const showDialog = computed({
   get: () => showAddDialog.value || editingViewCode.value !== null,
@@ -272,20 +291,31 @@ const toggleActive = async (viewCode: ViewCode) => {
   }
 }
 
-const deleteViewCode = async (viewCode: ViewCode) => {
+const handleSelectionChange = (selection: ViewCode[]) => {
+  selectedViewCodes.value = selection
+}
+
+const handleBulkDelete = async () => {
+  if (selectedViewCodes.value.length === 0) return
+
   try {
     await ElMessageBox.confirm(
-      `确定要删除观看码 "${viewCode.code}" 吗？`,
-      '确认删除',
+      `确定删除选中的 ${selectedViewCodes.value.length} 个观看码吗？`,
+      '批量删除',
       { type: 'warning' }
     )
-    await viewCodesApi.delete(viewCode.id)
+    bulkDeleting.value = true
+    const deletePromises = selectedViewCodes.value.map(c => viewCodesApi.delete(c.id))
+    await Promise.allSettled(deletePromises)
     ElMessage.success('删除成功')
+    selectedViewCodes.value = []
     loadViewCodes()
   } catch (e: any) {
     if (e !== 'cancel') {
       ElMessage.error(e.response?.data?.detail || '删除失败')
     }
+  } finally {
+    bulkDeleting.value = false
   }
 }
 
@@ -323,6 +353,12 @@ const submitForm = async () => {
 onMounted(() => {
   loadViewCodes()
   loadCategories()
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 </script>
 
@@ -343,6 +379,12 @@ onMounted(() => {
   font-weight: 600;
   color: #fff;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .code-cell {

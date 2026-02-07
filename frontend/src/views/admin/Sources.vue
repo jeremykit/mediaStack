@@ -9,6 +9,12 @@
         </el-tag>
         <el-button
           v-if="selectedSources.length > 0"
+          type="danger"
+          @click="handleBulkDelete"
+          :loading="bulkDeleting"
+        >批量删除 ({{ selectedSources.length }})</el-button>
+        <el-button
+          v-if="selectedSources.length > 0"
           type="primary"
           @click="showBulkCategoryDialog = true"
         >批量设置分类 ({{ selectedSources.length }})</el-button>
@@ -84,12 +90,6 @@
             @click="handleEdit(row)"
             :disabled="row.is_recording"
           >编辑</el-button>
-          <el-button
-            size="small"
-            type="danger"
-            @click="handleDelete(row)"
-            :disabled="row.is_recording"
-          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -172,12 +172,6 @@
             @click="handleEdit(source)"
             :disabled="source.is_recording"
           >编辑</el-button>
-          <el-button
-            size="small"
-            type="danger"
-            @click="handleDelete(source)"
-            :disabled="source.is_recording"
-          >删除</el-button>
         </div>
       </div>
     </div>
@@ -235,6 +229,7 @@ const selectedSources = ref<Source[]>([])
 const showBulkCategoryDialog = ref(false)
 const bulkCategoryId = ref<number | null>(null)
 const bulkUpdating = ref(false)
+const bulkDeleting = ref(false)
 const categories = ref<any[]>([])
 
 // Mobile detection
@@ -309,16 +304,27 @@ const handleEdit = (row: Source) => {
   formVisible.value = true
 }
 
-const handleDelete = async (row: Source) => {
+const handleBulkDelete = async () => {
+  if (selectedSources.value.length === 0) return
+
   try {
-    await ElMessageBox.confirm('确定要删除该直播源吗？', '提示', { type: 'warning' })
-    await sourcesApi.delete(row.id)
+    await ElMessageBox.confirm(
+      `确定删除选中的 ${selectedSources.value.length} 个直播源吗？`,
+      '批量删除',
+      { type: 'warning' }
+    )
+    bulkDeleting.value = true
+    const deletePromises = selectedSources.value.map(s => sourcesApi.delete(s.id))
+    await Promise.allSettled(deletePromises)
     ElMessage.success('删除成功')
+    selectedSources.value = []
     loadSources()
   } catch (e: any) {
     if (e !== 'cancel') {
       ElMessage.error(e.response?.data?.detail || '删除失败')
     }
+  } finally {
+    bulkDeleting.value = false
   }
 }
 
