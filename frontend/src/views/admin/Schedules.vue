@@ -6,7 +6,7 @@
     </div>
     <el-table :data="schedules" v-loading="loading" stripe>
       <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="source_name" label="直播源" />
+      <el-table-column prop="source_name" label="直播源" width="100" show-overflow-tooltip />
       <el-table-column prop="cron_expr" label="Cron 表达式" width="150" />
       <el-table-column prop="is_active" label="状态" width="100">
         <template #default="{ row }">
@@ -23,7 +23,7 @@
       <el-table-column prop="next_run_at" label="下次执行" width="180">
         <template #default="{ row }">{{ formatTime(row.next_run_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="180" fixed="right">
+      <el-table-column label="操作" fixed="right">
         <template #default="{ row }">
           <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>

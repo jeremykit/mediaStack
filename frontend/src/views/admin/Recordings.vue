@@ -52,7 +52,7 @@
           <span v-else class="text-muted">-</span>
         </template>
       </el-table-column>
-      <el-table-column prop="title" label="标题" show-overflow-tooltip min-width="150" />
+      <el-table-column prop="title" label="标题" width="100" show-overflow-tooltip />
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
           <el-tag :type="getStatusType(row.status)" size="small">
@@ -82,7 +82,7 @@
       <el-table-column prop="created_at" label="创建时间" width="160">
         <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="320" fixed="right">
+      <el-table-column label="操作" fixed="right">
         <template #default="{ row }">
           <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
           <el-button
@@ -207,7 +207,7 @@
     </div>
 
     <!-- Edit Dialog -->
-    <el-dialog v-model="showEditDialog" title="编辑视频" width="800px" top="5vh">
+    <el-dialog v-model="showEditDialog" title="编辑视频" width="800px" top="5vh" :class="{ 'mobile-dialog': isMobile }">
       <el-tabs v-model="editActiveTab">
         <!-- Basic Info Tab -->
         <el-tab-pane label="基本信息" name="basic">
@@ -224,7 +224,14 @@
               />
             </el-form-item>
             <el-form-item label="分类">
-              <el-select v-model="editForm.category_id" placeholder="选择分类" clearable style="width: 100%">
+              <el-select
+                v-model="editForm.category_id"
+                placeholder="选择分类"
+                clearable
+                style="width: 100%"
+                :teleported="!isMobile"
+                :popper-class="{ 'mobile-select-dropdown': isMobile }"
+              >
                 <el-option
                   v-for="cat in categories"
                   :key="cat.id"
@@ -239,6 +246,8 @@
                 multiple
                 placeholder="选择标签"
                 style="width: 100%"
+                :teleported="!isMobile"
+                :popper-class="{ 'mobile-select-dropdown': isMobile }"
               >
                 <el-option
                   v-for="tag in tags"
@@ -359,12 +368,22 @@
                 <div class="extract-form">
                   <el-form inline>
                     <el-form-item label="格式">
-                      <el-select v-model="extractFormat" style="width: 100px">
+                      <el-select
+                        v-model="extractFormat"
+                        style="width: 100px"
+                        :teleported="!isMobile"
+                        :popper-class="{ 'mobile-select-dropdown': isMobile }"
+                      >
                         <el-option label="MP3" value="mp3" />
                       </el-select>
                     </el-form-item>
                     <el-form-item label="比特率">
-                      <el-select v-model="extractBitrate" style="width: 120px">
+                      <el-select
+                        v-model="extractBitrate"
+                        style="width: 120px"
+                        :teleported="!isMobile"
+                        :popper-class="{ 'mobile-select-dropdown': isMobile }"
+                      >
                         <el-option label="128kbps" value="128k" />
                         <el-option label="192kbps" value="192k" />
                         <el-option label="256kbps" value="256k" />
@@ -405,7 +424,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { UploadRawFile } from 'element-plus'
 import { videosApi, type Video, type VideoStatus } from '../../api/videos'
@@ -427,6 +446,12 @@ const editingVideo = ref<Video | null>(null)
 const activeTab = ref('all')
 const selectedIds = ref<number[]>([])
 const editActiveTab = ref('basic')
+
+// Mobile detection
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
 
 // Thumbnail state
 const capturingThumbnail = ref(false)
@@ -781,6 +806,12 @@ onMounted(() => {
   loadVideos()
   loadCategories()
   loadTags()
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 </script>
 

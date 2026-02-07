@@ -7,7 +7,7 @@
 
     <el-table :data="tasks" v-loading="loading" stripe>
       <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="source_name" label="直播源" />
+      <el-table-column prop="source_name" label="直播源" width="100" show-overflow-tooltip />
       <el-table-column label="分类" width="120">
         <template #default="{ row }">
           <el-tag v-if="row.source?.category" size="small">{{ row.source.category.name }}</el-tag>
@@ -31,7 +31,7 @@
       <el-table-column prop="file_size" label="文件大小" width="120">
         <template #default="{ row }">{{ formatSize(row.file_size) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="100" fixed="right">
+      <el-table-column label="操作" fixed="right">
         <template #default="{ row }">
           <el-button
             v-if="row.status === 'recording'"

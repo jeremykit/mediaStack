@@ -2,7 +2,11 @@
   <div class="sources-page">
     <div class="page-header">
       <h2>直播源管理</h2>
-      <div>
+      <div class="header-actions">
+        <el-tag :type="wsStatusType" size="small" class="ws-status">
+          <span class="ws-status-dot"></span>
+          WS: {{ wsStatusText }}
+        </el-tag>
         <el-button
           v-if="selectedSources.length > 0"
           type="primary"
@@ -15,7 +19,7 @@
     <el-table :data="sources" v-loading="loading" stripe @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="name" label="名称" />
+      <el-table-column prop="name" label="名称" width="100" show-overflow-tooltip />
       <el-table-column prop="protocol" label="协议" width="100">
         <template #default="{ row }">
           <el-tag>{{ row.protocol.toUpperCase() }}</el-tag>
@@ -49,10 +53,15 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="380" fixed="right">
+      <el-table-column label="操作" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" @click="handleCheckStatus(row)" :loading="row.checking">
-            检测状态
+          <el-button
+            size="small"
+            @click="handleCheckStatus(row)"
+            :loading="row.checking"
+            :disabled="row.checking"
+          >
+            {{ row.checkingProgress || '检测状态' }}
           </el-button>
           <el-button
             v-if="!row.is_recording"
@@ -134,8 +143,13 @@
         </div>
 
         <div class="source-card-actions" style="margin-top: 12px;">
-          <el-button size="small" @click="handleCheckStatus(source)" :loading="source.checking">
-            检测
+          <el-button
+            size="small"
+            @click="handleCheckStatus(source)"
+            :loading="source.checking"
+            :disabled="source.checking"
+          >
+            {{ source.checkingProgress || '检测' }}
           </el-button>
           <el-button
             v-if="!source.is_recording"
@@ -170,10 +184,15 @@
 
     <SourceForm v-model="formVisible" :source="currentSource" @success="loadSources" />
 
-    <el-dialog v-model="showBulkCategoryDialog" title="批量设置分类" width="400px">
+    <el-dialog v-model="showBulkCategoryDialog" title="批量设置分类" width="400px" :class="{ 'mobile-dialog': isMobile }">
       <el-form>
         <el-form-item label="选择分类">
-          <el-select v-model="bulkCategoryId" placeholder="请选择分类">
+          <el-select
+            v-model="bulkCategoryId"
+            placeholder="请选择分类"
+            :teleported="!isMobile"
+            :popper-class="{ 'mobile-select-dropdown': isMobile }"
+          >
             <el-option
               v-for="cat in categories"
               :key="cat.id"
@@ -192,14 +211,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { sourcesApi, type Source } from '../../api/sources'
 import { categoriesApi } from '../../api/categories'
 import { tasksApi } from '../../api/tasks'
 import SourceForm from '../../components/SourceForm.vue'
+import { useSourceWebSocket } from '../../composables/useSourceWebSocket'
 
-const sources = ref<(Source & { checking?: boolean; starting?: boolean; stopping?: boolean })[]>([])
+// 扩展 Source 类型，添加检测相关状态
+interface SourceWithCheckStatus extends Source {
+  checking?: boolean
+  checkingProgress?: string  // 检测进度，如 "检测中(3/10)"
+  starting?: boolean
+  stopping?: boolean
+}
+
+const sources = ref<SourceWithCheckStatus[]>([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentSource = ref<Source | null>(null)
@@ -208,7 +236,56 @@ const showBulkCategoryDialog = ref(false)
 const bulkCategoryId = ref<number | null>(null)
 const bulkUpdating = ref(false)
 const categories = ref<any[]>([])
-let pollTimer: number | null = null
+
+// Mobile detection
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
+
+// WebSocket 连接状态
+const { connected, reconnecting, connect, disconnect } = useSourceWebSocket({
+  onStatusChange: (sourceId: number, isOnline: boolean, data?: any) => {
+    // 更新对应源的在线状态
+    const source = sources.value.find(s => s.id === sourceId)
+    if (source) {
+      source.is_online = isOnline
+      source.last_check_time = new Date().toISOString()
+
+      // 处理检测进度
+      if (data?.checking) {
+        // 还在检测中，显示进度
+        source.checkingProgress = `检测中(${data.attempt}/${data.max_attempts})...`
+      } else if (data?.attempt) {
+        // 检测完成
+        source.checking = false
+        source.checkingProgress = undefined
+      }
+    }
+  },
+  onConnected: (connectionId) => {
+    console.log('WebSocket connected:', connectionId)
+  },
+  onDisconnected: () => {
+    console.log('WebSocket disconnected')
+  },
+  onError: (error) => {
+    console.error('WebSocket error:', error)
+  }
+})
+
+// WebSocket 状态标签
+const wsStatusText = computed(() => {
+  if (connected.value) return '已连接'
+  if (reconnecting.value) return '重连中...'
+  return '未连接'
+})
+
+const wsStatusType = computed(() => {
+  if (connected.value) return 'success'
+  if (reconnecting.value) return 'warning'
+  return 'danger'
+})
 
 const loadSources = async () => {
   loading.value = true
@@ -219,19 +296,6 @@ const loadSources = async () => {
     ElMessage.error('加载失败')
   } finally {
     loading.value = false
-  }
-}
-
-const startPolling = () => {
-  pollTimer = window.setInterval(() => {
-    loadSources()
-  }, 30000)
-}
-
-const stopPolling = () => {
-  if (pollTimer) {
-    clearInterval(pollTimer)
-    pollTimer = null
   }
 }
 
@@ -258,43 +322,51 @@ const handleDelete = async (row: Source) => {
   }
 }
 
-const handleCheckStatus = async (row: Source & { checking?: boolean }) => {
+const handleCheckStatus = async (row: SourceWithCheckStatus) => {
   row.checking = true
+  row.checkingProgress = '检测中...'
+
   try {
-    const { data } = await sourcesApi.checkStatus(row.id)
-    ElMessage({
-      type: data.online ? 'success' : 'warning',
-      message: data.message,
-      duration: 5000
-    })
+    // 发起检测请求，后端立即返回 202
+    await sourcesApi.checkStatus(row.id)
+    ElMessage.success('检测任务已启动，请等待结果...')
   } catch (e: any) {
-    ElMessage.error(e.response?.data?.detail || '检测失败，请检查网络连接')
-  } finally {
+    // 如果是拦截器已处理过错误，不显示
+    if (!e?.__handled && e?.code !== 'ERR_CANCELED') {
+      ElMessage.error(e.response?.data?.detail || '启动检测失败')
+    }
+    // 失败时重置状态
     row.checking = false
+    row.checkingProgress = undefined
   }
+  // 注意：不重置 checking 状态，等待 WebSocket 推送结果
 }
 
-const handleStartRecording = async (row: Source & { starting?: boolean }) => {
+const handleStartRecording = async (row: SourceWithCheckStatus) => {
   row.starting = true
   try {
     await tasksApi.startRecording(row.id)
     ElMessage.success('已开始录制')
     await loadSources()
   } catch (e: any) {
-    ElMessage.error(e.response?.data?.detail || '启动失败')
+    if (!e?.__handled && e?.code !== 'ERR_CANCELED') {
+      ElMessage.error(e.response?.data?.detail || '启动失败')
+    }
   } finally {
     row.starting = false
   }
 }
 
-const handleStopRecording = async (row: Source & { stopping?: boolean }) => {
+const handleStopRecording = async (row: SourceWithCheckStatus) => {
   row.stopping = true
   try {
     await tasksApi.stopRecording(row.id)
     ElMessage.success('已停止录制')
     await loadSources()
   } catch (e: any) {
-    ElMessage.error(e.response?.data?.detail || '停止失败')
+    if (!e?.__handled && e?.code !== 'ERR_CANCELED') {
+      ElMessage.error(e.response?.data?.detail || '停止失败')
+    }
   } finally {
     row.stopping = false
   }
@@ -346,11 +418,16 @@ const handleBulkUpdateCategory = async () => {
 onMounted(() => {
   loadSources()
   loadCategories()
-  startPolling()
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+  // 连接 WebSocket
+  connect()
 })
 
 onUnmounted(() => {
-  stopPolling()
+  window.removeEventListener('resize', checkMobile)
+  // 断开 WebSocket
+  disconnect()
 })
 </script>
 
@@ -371,6 +448,47 @@ onUnmounted(() => {
   font-weight: 600;
   color: #fff;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ws-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ws-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: pulse 2s infinite;
+}
+
+.ws-status-dot--connected {
+  background-color: #10b981;
+}
+
+.ws-status-dot--reconnecting {
+  background-color: #f59e0b;
+}
+
+.ws-status-dot--disconnected {
+  background-color: #ef4444;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Override Element Plus table styles for dark theme */
