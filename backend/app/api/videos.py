@@ -17,7 +17,7 @@ from app.schemas.video import (
 )
 from app.schemas.category import CategoryListResponse
 from app.schemas.tag import TagListResponse
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_user_optional
 from app.config import settings
 
 router = APIRouter(prefix="/api/videos", tags=["videos"])
@@ -71,13 +71,18 @@ async def list_videos(
     search: Optional[str] = Query(None),
     category_id: Optional[int] = Query(None),
     tag_ids: Optional[str] = Query(None, description="Comma-separated tag IDs"),
-    status: Optional[VideoStatus] = Query(None, description="Filter by video status"),
+    status: Optional[VideoStatus] = Query(None, description="Filter by video status (logged-in users only)"),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     x_view_code: Optional[str] = Header(None, alias="X-View-Code"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[Admin] = Depends(get_current_user_optional)
 ):
-    """List videos with optional filtering."""
+    """List videos with optional filtering.
+
+    Public users (no auth): Only published videos are returned, status filter is ignored.
+    Logged-in users: All videos are visible, status filter can be applied.
+    """
     query = (
         select(VideoFile)
         .options(selectinload(VideoFile.category), selectinload(VideoFile.tags))
@@ -90,8 +95,14 @@ async def list_videos(
     if category_id:
         query = query.where(VideoFile.category_id == category_id)
 
-    if status:
-        query = query.where(VideoFile.status == status)
+    # Status filtering: only for logged-in users
+    if current_user is not None:
+        # Logged-in users can filter by status
+        if status:
+            query = query.where(VideoFile.status == status)
+    else:
+        # Public users: only show published videos, ignore status query param
+        query = query.where(VideoFile.status == VideoStatus.published)
 
     if tag_ids:
         try:

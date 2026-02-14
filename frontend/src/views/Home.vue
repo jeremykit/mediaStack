@@ -104,6 +104,45 @@
             </button>
           </div>
         </div>
+
+        <div class="filter-group" v-if="authStore.isLoggedIn">
+          <div class="filter-header">
+            <svg class="filter-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="filter-label">审核状态</span>
+          </div>
+          <div class="filter-options">
+            <button
+              class="filter-chip"
+              :class="{ active: selectedStatus === null }"
+              @click="selectedStatus = null; loadVideos()"
+            >
+              全部
+            </button>
+            <button
+              class="filter-chip"
+              :class="{ active: selectedStatus === 'published' }"
+              @click="selectedStatus = 'published'; loadVideos()"
+            >
+              已发布
+            </button>
+            <button
+              class="filter-chip"
+              :class="{ active: selectedStatus === 'pending' }"
+              @click="selectedStatus = 'pending'; loadVideos()"
+            >
+              待审核
+            </button>
+            <button
+              class="filter-chip"
+              :class="{ active: selectedStatus === 'offline' }"
+              @click="selectedStatus = 'offline'; loadVideos()"
+            >
+              已下架
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -145,12 +184,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { videosApi, type Video } from '../api/videos'
+import { videosApi, type Video, type VideoStatus } from '../api/videos'
 import { categoriesApi, type Category } from '../api/categories'
 import { tagsApi, type Tag } from '../api/tags'
+import { useAuthStore } from '../stores/auth'
 import VideoCard from '../components/VideoCard.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const videos = ref<Video[]>([])
 const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
@@ -158,6 +199,7 @@ const loading = ref(false)
 const search = ref('')
 const selectedCategory = ref<number | null>(null)
 const selectedTags = ref<number[]>([])
+const selectedStatus = ref<VideoStatus | null>(null)
 
 const toggleTag = (tagId: number) => {
   const index = selectedTags.value.indexOf(tagId)
@@ -176,6 +218,10 @@ const loadVideos = async () => {
     if (search.value) params.search = search.value
     if (selectedCategory.value) params.category_id = selectedCategory.value
     if (selectedTags.value.length > 0) params.tag_ids = selectedTags.value.join(',')
+    // Only send status parameter if user is logged in
+    if (authStore.isLoggedIn && selectedStatus.value) {
+      params.status = selectedStatus.value
+    }
 
     const { data } = await videosApi.list(params)
     videos.value = data
