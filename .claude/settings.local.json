@@ -57,7 +57,16 @@
       "Bash(ffprobe:*)",
       "Bash(where:*)",
       "Bash(powershell:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(npx tsc:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker ps:*)",
+      "Bash(ls:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose exec backend python:*)",
+      "Bash(docker-compose exec backend grep:*)",
+      "Bash(docker-compose exec backend curl -s -X POST http://localhost:8000/api/sources/callback -H \"Content-Type: application/json\" -d '{\"\"app\"\":\"\"test.com\"\",\"\"appid\"\":1,\"\"appname\"\":\"\"live\"\",\"\"channel_id\"\":\"\"test\"\",\"\"errcode\"\":0,\"\"errmsg\"\":\"\"ok\"\",\"\"event_time\"\":1738886400,\"\"event_type\"\":1,\"\"idc_id\"\":1,\"\"node\"\":\"\"1.1.1.1\"\",\"\"sequence\"\":\"\"seq\"\",\"\"set_id\"\":1,\"\"sign\"\":\"\"sig\"\",\"\"stream_id\"\":\"\"stream\"\",\"\"stream_param\"\":\"\"\"\",\"\"t\"\":1738886400,\"\"user_ip\"\":\"\"1.1.1.1\"\"}')",
+      "Bash(docker-compose exec:*)"
     ]
   }
 }

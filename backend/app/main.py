@@ -4,9 +4,19 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 import logging
 
+# Configure logging
+import sys
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s | %(levelname)s | %(name)s | %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    stream=sys.stdout,
+    force=True
+)
+
 from app.config import settings
 from app.database import init_db, async_session, ensure_default_category
-from app.api import auth, sources, tasks, schedules, videos, system, categories, tags, view_codes, upload, video_extensions, audio, thumbnail, video_trim
+from app.api import auth, sources, tasks, schedules, videos, system, categories, tags, view_codes, upload, video_extensions, audio, thumbnail, video_trim, websocket
 from app.services.scheduler import init_scheduler, shutdown_scheduler
 from app.services.status_monitor import status_monitor
 from app.init_admin import create_initial_admin
@@ -96,3 +106,4 @@ app.include_router(video_extensions.router)
 app.include_router(audio.router)
 app.include_router(thumbnail.router)
 app.include_router(video_trim.router)
+app.include_router(websocket.router)

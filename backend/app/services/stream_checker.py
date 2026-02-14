@@ -20,10 +20,11 @@ async def check_stream_status(url: str, protocol: str) -> tuple[bool, str]:
             stderr=asyncio.subprocess.PIPE
         )
         try:
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=20.0)
+            # 减少超时时间到 5 秒
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=5.0)
         except asyncio.TimeoutError:
             process.kill()
-            return False, "连接超时（20秒），请检查网络或流地址是否正确"
+            return False, "连接超时，请检查网络或流地址是否正确"
 
         if process.returncode == 0 and b"codec_type" in stdout:
             return True, "直播流在线"

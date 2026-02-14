@@ -1,11 +1,16 @@
 <template>
-  <el-dialog :title="isEdit ? '编辑直播源' : '添加直播源'" v-model="visible" width="500px">
+  <el-dialog :title="isEdit ? '编辑直播源' : '添加直播源'" v-model="visible" width="500px" :class="{ 'mobile-dialog': isMobile }">
     <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
       <el-form-item label="名称" prop="name">
         <el-input v-model="form.name" placeholder="请输入直播源名称" />
       </el-form-item>
       <el-form-item label="协议" prop="protocol">
-        <el-select v-model="form.protocol" placeholder="请选择协议">
+        <el-select
+          v-model="form.protocol"
+          placeholder="请选择协议"
+          :teleported="!isMobile"
+          :popper-class="{ 'mobile-select-dropdown': isMobile }"
+        >
           <el-option label="RTMP" value="rtmp" />
           <el-option label="HLS/M3U8" value="hls" />
         </el-select>
@@ -17,7 +22,13 @@
         <el-input-number v-model="form.retention_days" :min="1" :max="3650" />
       </el-form-item>
       <el-form-item label="分类" prop="category_id">
-        <el-select v-model="form.category_id" placeholder="请选择分类（可选）" clearable>
+        <el-select
+          v-model="form.category_id"
+          placeholder="请选择分类（可选）"
+          clearable
+          :teleported="!isMobile"
+          :popper-class="{ 'mobile-select-dropdown': isMobile }"
+        >
           <el-option
             v-for="cat in categories"
             :key="cat.id"
@@ -38,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { sourcesApi, type Source, type SourceCreate } from '../api/sources'
 import { categoriesApi } from '../api/categories'
@@ -60,6 +71,12 @@ const formRef = ref<FormInstance>()
 const isEdit = ref(false)
 const categories = ref<any[]>([])
 
+// Mobile detection
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
+
 const form = reactive<SourceCreate & { id?: number }>({
   name: '',
   protocol: 'rtmp',
@@ -79,7 +96,14 @@ watch(() => props.modelValue, (val) => {
   visible.value = val
   if (val && props.source) {
     isEdit.value = true
-    Object.assign(form, props.source)
+    // 只复制需要的字段，避免发送额外的字段到后端
+    form.id = props.source.id
+    form.name = props.source.name
+    form.protocol = props.source.protocol
+    form.url = props.source.url
+    form.retention_days = props.source.retention_days
+    form.is_active = props.source.is_active
+    form.category_id = props.source.category?.id
   } else {
     isEdit.value = false
     Object.assign(form, { name: '', protocol: 'rtmp', url: '', retention_days: 365, is_active: true, category_id: undefined })
@@ -120,6 +144,12 @@ const loadCategories = async () => {
 }
 
 onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
   loadCategories()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 </script>

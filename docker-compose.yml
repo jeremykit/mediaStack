@@ -20,6 +20,7 @@ services:
       - ./data:/app/data
     environment:
       - DEBUG=false
+      - PYTHONUNBUFFERED=1
       - DATABASE_URL=sqlite+aiosqlite:///./data/db/mediastack.db
       - STORAGE_PATH=/app/data/videos
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}

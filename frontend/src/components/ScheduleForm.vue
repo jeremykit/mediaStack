@@ -1,8 +1,14 @@
 <template>
-  <el-dialog :title="isEdit ? '编辑定时计划' : '添加定时计划'" v-model="visible" width="500px">
+  <el-dialog :title="isEdit ? '编辑定时计划' : '添加定时计划'" v-model="visible" width="500px" :class="{ 'mobile-dialog': isMobile }">
     <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
       <el-form-item label="直播源" prop="source_id" v-if="!isEdit">
-        <el-select v-model="form.source_id" placeholder="请选择直播源" style="width: 100%">
+        <el-select
+          v-model="form.source_id"
+          placeholder="请选择直播源"
+          style="width: 100%"
+          :teleported="!isMobile"
+          :popper-class="{ 'mobile-select-dropdown': isMobile }"
+        >
           <el-option v-for="source in sources" :key="source.id" :label="source.name" :value="source.id" />
         </el-select>
       </el-form-item>
@@ -22,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted, onUnmounted } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { schedulesApi, type Schedule, type ScheduleCreate } from '../api/schedules'
 import { sourcesApi, type Source } from '../api/sources'
@@ -37,6 +43,12 @@ const formRef = ref<FormInstance>()
 const isEdit = ref(false)
 const sources = ref<Source[]>([])
 
+// Mobile detection
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
+
 const form = reactive<ScheduleCreate & { id?: number }>({ source_id: 0, cron_expr: '', is_active: true })
 
 const rules: FormRules = {
@@ -50,7 +62,11 @@ watch(() => props.modelValue, async (val) => {
     try { sources.value = (await sourcesApi.list()).data } catch {}
     if (props.schedule) {
       isEdit.value = true
-      Object.assign(form, props.schedule)
+      // 只复制需要的字段，避免发送额外的字段到后端
+      form.id = props.schedule.id
+      form.source_id = props.schedule.source_id
+      form.cron_expr = props.schedule.cron_expr
+      form.is_active = props.schedule.is_active
     } else {
       isEdit.value = false
       Object.assign(form, { source_id: 0, cron_expr: '', is_active: true })
@@ -79,6 +95,15 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+})
 </script>
 
 <style scoped>
