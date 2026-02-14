@@ -9,7 +9,7 @@ from app.models import Admin
 from app.schemas.video_trim import TrimVideoRequest, TrimTaskResponse
 from app.services.video_trimmer import VideoTrimmerService
 
-router = APIRouter()
+router = APIRouter(prefix="/api", tags=["video-trim"])
 
 
 @router.post("/videos/{video_id}/trim", response_model=TrimTaskResponse)
