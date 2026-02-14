@@ -4,6 +4,13 @@
       <h2>录制管理</h2>
       <div class="header-actions">
         <el-button
+          type="danger"
+          :disabled="selectedIds.length === 0"
+          @click="handleBatchDelete"
+        >
+          批量删除 ({{ selectedIds.length }})
+        </el-button>
+        <el-button
           type="primary"
           :disabled="selectedIds.length === 0"
           @click="handleBatchPublish"
@@ -76,10 +83,10 @@
       <el-table-column prop="duration" label="时长" width="80">
         <template #default="{ row }">{{ formatDuration(row.duration) }}</template>
       </el-table-column>
-      <el-table-column prop="file_size" label="大小" width="80">
+      <el-table-column prop="file_size" label="大小" width="100">
         <template #default="{ row }">{{ formatSize(row.file_size) }}</template>
       </el-table-column>
-      <el-table-column prop="created_at" label="创建时间" width="160">
+      <el-table-column prop="created_at" label="创建时间" width="180">
         <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
       </el-table-column>
       <el-table-column label="操作" fixed="right">
@@ -118,7 +125,6 @@
           >
             下架
           </el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -197,7 +203,6 @@
             type="warning"
             @click="handleOffline(video)"
           >下架</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(video)">删除</el-button>
         </div>
       </div>
 
@@ -742,14 +747,29 @@ const handleBatchOffline = async () => {
   }
 }
 
-const handleDelete = async (row: Video) => {
+const handleBatchDelete = async () => {
+  if (selectedIds.value.length === 0) return
   try {
-    await ElMessageBox.confirm('确定要删除该视频吗？此操作将同时删除文件！', '提示', { type: 'warning' })
-    await videosApi.delete(row.id)
-    ElMessage.success('删除成功')
+    await ElMessageBox.confirm(
+      `确定要批量删除 ${selectedIds.value.length} 个视频吗？此操作将同时删除文件！`,
+      '提示',
+      { type: 'warning' }
+    )
+    let successCount = 0
+    let failCount = 0
+    for (const id of selectedIds.value) {
+      try {
+        await videosApi.delete(id)
+        successCount++
+      } catch {
+        failCount++
+      }
+    }
+    ElMessage.success(`成功删除 ${successCount} 个视频${failCount > 0 ? `，${failCount} 个失败` : ''}`)
+    selectedIds.value = []
     loadVideos()
   } catch (e: any) {
-    if (e !== 'cancel') ElMessage.error(e.response?.data?.detail || '删除失败')
+    if (e !== 'cancel') ElMessage.error('批量删除已取消')
   }
 }
 
