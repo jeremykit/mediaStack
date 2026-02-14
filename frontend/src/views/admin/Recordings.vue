@@ -52,7 +52,7 @@
           <span v-else class="text-muted">-</span>
         </template>
       </el-table-column>
-      <el-table-column prop="title" label="标题" width="100" show-overflow-tooltip />
+      <el-table-column prop="title" label="标题" min-width="100" class-name="title-column" show-overflow-tooltip />
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
           <el-tag :type="getStatusType(row.status)" size="small">
@@ -935,6 +935,22 @@ onUnmounted(() => {
   border-radius: 12px;
   overflow: hidden;
   color: #e4e7eb;
+}
+
+/* Title column: adaptive width with max-width and tooltip */
+:deep(.title-column .cell) {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.title-column) {
+  position: relative;
+}
+
+:deep(.title-column:hover .cell) {
+  cursor: help;
 }
 
 :deep(.el-table__header-wrapper) {
