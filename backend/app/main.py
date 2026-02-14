@@ -3,10 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pathlib import Path
 import logging
-import os
-
-# Set timezone to Asia/Shanghai (Beijing Time)
-os.environ['TZ'] = 'Asia/Shanghai'
 
 # Configure logging
 import sys
