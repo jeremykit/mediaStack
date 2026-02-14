@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Header
+from fastapi import APIRouter, Depends, HTTPException, Query, Header, status
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
@@ -203,7 +203,11 @@ async def batch_offline_videos(
 
 
 @router.get("/{video_id}", response_model=VideoResponse)
-async def get_video(video_id: int, db: AsyncSession = Depends(get_db)):
+async def get_video(
+    video_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[Admin] = Depends(get_current_user_optional)
+):
     result = await db.execute(
         select(VideoFile)
         .options(selectinload(VideoFile.category), selectinload(VideoFile.tags))
@@ -212,6 +216,14 @@ async def get_video(video_id: int, db: AsyncSession = Depends(get_db)):
     video = result.scalar_one_or_none()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
+
+    # Public users can only access published videos
+    if current_user is None and video.status != VideoStatus.published:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Login required to view this video"
+        )
+
     return video_to_response(video)
 
 
@@ -396,11 +408,22 @@ async def delete_video(
 
 
 @router.get("/{video_id}/play", response_model=VideoPlayResponse)
-async def get_play_url(video_id: int, db: AsyncSession = Depends(get_db)):
+async def get_play_url(
+    video_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[Admin] = Depends(get_current_user_optional)
+):
     result = await db.execute(select(VideoFile).where(VideoFile.id == video_id))
     video = result.scalar_one_or_none()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
+
+    # Public users can only access published videos
+    if current_user is None and video.status != VideoStatus.published:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Login required to play this video"
+        )
 
     filename = os.path.basename(video.file_path)
 
@@ -420,8 +443,25 @@ async def get_play_url(video_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/{video_id}/view")
-async def increment_view(video_id: int, db: AsyncSession = Depends(get_db)):
-    """Increment view count (public endpoint)."""
+async def increment_view(
+    video_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[Admin] = Depends(get_current_user_optional)
+):
+    """Increment view count (public endpoint for published videos only)."""
+    # First check if video exists and get its status
+    video_result = await db.execute(select(VideoFile).where(VideoFile.id == video_id))
+    video = video_result.scalar_one_or_none()
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    # Public users can only increment view count for published videos
+    if current_user is None and video.status != VideoStatus.published:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Login required"
+        )
+
     result = await db.execute(
         update(VideoFile)
         .where(VideoFile.id == video_id)

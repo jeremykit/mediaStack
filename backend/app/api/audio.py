@@ -1,11 +1,12 @@
 """Audio extraction API endpoints."""
 import os
+import re
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pathlib import Path
-import re
+from typing import Optional
 
 from app.database import get_db
 from app.models import Admin, VideoFile, AudioExtractTask, AudioExtractStatus, FileType
@@ -14,7 +15,7 @@ from app.schemas.audio import (
     AudioExtractTaskResponse,
     AudioInfoResponse
 )
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_current_user_optional
 from app.services.audio_extractor import AudioExtractorService
 from app.config import settings
 
@@ -50,12 +51,13 @@ async def extract_audio(
 async def get_audio_info(
     video_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: Admin = Depends(get_current_user)
+    current_user: Admin = Depends(get_current_user_optional)
 ):
     """
     Get audio extraction information for a video.
 
-    Requires admin authentication.
+    - Public users: Can only access published videos
+    - Logged-in users: Can access any video
     Returns task status and download URL if audio is available.
     """
     # Check if video exists
@@ -65,6 +67,10 @@ async def get_audio_info(
     video = result.scalar_one_or_none()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
+
+    # Public users can only access published videos
+    if current_user is None and video.status != "published":
+        raise HTTPException(status_code=401, detail="Login required")
 
     # If this is an audio file (uploaded audio), return the file itself
     if video.file_type == FileType.audio:
@@ -127,12 +133,14 @@ async def get_audio_info(
 @router.get("/{video_id}/audio/download")
 async def download_audio(
     video_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: Admin = Depends(get_current_user_optional)
 ):
     """
     Download extracted audio file.
 
-    This endpoint is public (no authentication required).
+    - Public users: Can only download from published videos
+    - Logged-in users: Can download from any video
     Returns the audio file for download.
     """
     # Check if video exists
@@ -142,6 +150,10 @@ async def download_audio(
     video = result.scalar_one_or_none()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
+
+    # Public users can only access published videos
+    if current_user is None and video.status != "published":
+        raise HTTPException(status_code=401, detail="Login required")
 
     # Get completed task
     task = await AudioExtractorService.get_completed_task(video_id, db)
