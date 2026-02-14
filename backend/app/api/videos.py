@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Header
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
@@ -17,6 +18,7 @@ from app.schemas.video import (
 from app.schemas.category import CategoryListResponse
 from app.schemas.tag import TagListResponse
 from app.api.deps import get_current_user
+from app.config import settings
 
 router = APIRouter(prefix="/api/videos", tags=["videos"])
 
@@ -362,8 +364,9 @@ async def delete_video(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    file_path = video.file_path
-    thumbnail_path = video.thumbnail
+    # Build full paths from storage_path and relative paths
+    file_path = settings.storage_path / video.file_path if video.file_path else None
+    thumbnail_path = settings.storage_path / video.thumbnail if video.thumbnail else None
 
     await db.delete(video)
     await db.commit()
@@ -420,3 +423,32 @@ async def increment_view(video_id: int, db: AsyncSession = Depends(get_db)):
 
     await db.commit()
     return {"view_count": row[0]}
+
+
+@router.get("/{video_id}/stream")
+async def stream_video(video_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Stream video file directly (supports range requests).
+
+    This endpoint is used by the video trim dialog to preview videos
+    using the HTML5 video element.
+    """
+    result = await db.execute(select(VideoFile).where(VideoFile.id == video_id))
+    video = result.scalar_one_or_none()
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    # Build full path from storage_path and relative file_path
+    full_path = settings.storage_path / video.file_path if video.file_path else None
+    if not full_path or not os.path.exists(full_path):
+        raise HTTPException(status_code=404, detail="Video file not found")
+
+    # Determine media type
+    media_type = "video/mp4"
+    filename = os.path.basename(full_path)
+
+    return FileResponse(
+        path=str(full_path),
+        media_type=media_type,
+        filename=filename,
+    )
