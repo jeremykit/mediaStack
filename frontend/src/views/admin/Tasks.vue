@@ -10,7 +10,7 @@
       <el-table-column prop="source_name" label="直播源" width="100" show-overflow-tooltip />
       <el-table-column label="分类" width="120">
         <template #default="{ row }">
-          <el-tag v-if="row.source?.category" size="small">{{ row.source.category.name }}</el-tag>
+          <el-tag v-if="row.category_name" size="small">{{ row.category_name }}</el-tag>
           <el-tag v-else size="small" type="info">未分类</el-tag>
         </template>
       </el-table-column>
@@ -31,7 +31,7 @@
       <el-table-column prop="file_size" label="文件大小" width="120">
         <template #default="{ row }">{{ formatSize(row.file_size) }}</template>
       </el-table-column>
-      <el-table-column label="操作" fixed="right">
+      <el-table-column label="操作" fixed="right" width="120">
         <template #default="{ row }">
           <el-button
             v-if="row.status === 'recording'"
@@ -40,6 +40,14 @@
             @click="handleStop(row)"
             :loading="row.stopping"
           >停止</el-button>
+          <el-button
+            v-else
+            size="small"
+            type="danger"
+            @click="handleDelete(row)"
+            :loading="row.deleting"
+            link
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -59,9 +67,9 @@
           <el-tag :type="statusType(task.status)">{{ statusText(task.status) }}</el-tag>
         </div>
 
-        <div class="task-card-row" v-if="task.source?.category">
+        <div class="task-card-row" v-if="task.category_name">
           <span class="task-card-label">分类</span>
-          <el-tag size="small">{{ task.source.category.name }}</el-tag>
+          <el-tag size="small">{{ task.category_name }}</el-tag>
         </div>
 
         <div class="task-card-row">
@@ -84,14 +92,23 @@
           <span class="task-card-value">{{ formatSize(task.file_size) }}</span>
         </div>
 
-        <div class="task-card-actions" v-if="task.status === 'recording'">
+        <div class="task-card-actions">
           <el-button
+            v-if="task.status === 'recording'"
             type="danger"
             size="small"
             @click="handleStop(task)"
             :loading="task.stopping"
             style="width: 100%"
           >停止录制</el-button>
+          <el-button
+            v-else
+            type="danger"
+            size="small"
+            @click="handleDelete(task)"
+            :loading="task.deleting"
+            style="width: 100%"
+          >删除</el-button>
         </div>
       </div>
 
@@ -104,10 +121,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { tasksApi, type Task } from '../../api/tasks'
 
-const tasks = ref<(Task & { stopping?: boolean })[]>([])
+const tasks = ref<(Task & { stopping?: boolean; deleting?: boolean })[]>([])
 const loading = ref(false)
 let refreshTimer: number | null = null
 
@@ -133,6 +150,33 @@ const handleStop = async (row: Task & { stopping?: boolean }) => {
     ElMessage.error(e.response?.data?.detail || '停止失败')
   } finally {
     row.stopping = false
+  }
+}
+
+const handleDelete = async (row: Task & { deleting?: boolean }) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除录制任务 "${row.source_name}" 吗？此操作不可恢复。`,
+      '确认删除',
+      {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+  } catch {
+    return
+  }
+
+  row.deleting = true
+  try {
+    await tasksApi.delete(row.id)
+    ElMessage.success('删除成功')
+    loadTasks()
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.detail || '删除失败')
+  } finally {
+    row.deleting = false
   }
 }
 

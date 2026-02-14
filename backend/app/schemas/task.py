@@ -22,3 +22,5 @@ class TaskResponse(BaseModel):
 
 class TaskWithSourceResponse(TaskResponse):
     source_name: str
+    category_id: Optional[int] = None
+    category_name: Optional[str] = None
