@@ -17,7 +17,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=settings.access_token_expire_minutes)
+    expire = datetime.now() + timedelta(minutes=settings.access_token_expire_minutes)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 
@@ -36,7 +36,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user.last_login_at = datetime.utcnow()
+    user.last_login_at = datetime.now()
     await db.commit()
 
     access_token = create_access_token(data={"sub": user.username})

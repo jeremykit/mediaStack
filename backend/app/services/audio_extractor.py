@@ -182,7 +182,7 @@ class AudioExtractorService:
 
                 if process.returncode == 0:
                     task.status = AudioExtractStatus.completed
-                    task.completed_at = datetime.utcnow()
+                    task.completed_at = datetime.now()
                 else:
                     task.status = AudioExtractStatus.failed
                     # Store last 500 chars of error message

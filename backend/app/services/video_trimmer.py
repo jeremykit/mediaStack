@@ -172,7 +172,7 @@ class VideoTrimmerService:
 
                 # Mark task as completed
                 task.status = TrimStatus.completed
-                task.completed_at = datetime.utcnow()
+                task.completed_at = datetime.now()
                 await db.commit()
 
             except Exception as e:
@@ -449,7 +449,7 @@ class VideoTrimmerService:
         # Update task status
         task.status = TrimStatus.failed
         task.error_message = "Task cancelled by user"
-        task.completed_at = datetime.utcnow()
+        task.completed_at = datetime.now()
         await db.commit()
 
         return True

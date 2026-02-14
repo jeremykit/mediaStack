@@ -55,7 +55,7 @@ async def websocket_endpoint(websocket: WebSocket):
             "type": "connected",
             "data": {
                 "connection_id": conn_id,
-                "timestamp": datetime.utcnow().isoformat() + "Z"
+                "timestamp": datetime.now().isoformat()
             }
         })
     except Exception as e:
@@ -106,7 +106,7 @@ async def broadcast_source_status(source_id: int, is_online: bool, attempt: int 
         "data": {
             "source_id": source_id,
             "is_online": is_online,
-            "timestamp": datetime.utcnow().isoformat() + "Z"
+            "timestamp": datetime.now().isoformat()
         }
     }
 

@@ -67,7 +67,7 @@ class RecorderService:
                 cls._processes[task_id] = process
 
                 task.status = TaskStatus.recording
-                task.started_at = datetime.utcnow()
+                task.started_at = datetime.now()
                 await db.commit()
 
                 _, stderr = await process.communicate()
@@ -81,7 +81,7 @@ class RecorderService:
                     task.status = TaskStatus.failed
                     task.error_message = stderr.decode()[-500:]
 
-                task.ended_at = datetime.utcnow()
+                task.ended_at = datetime.now()
 
                 if output_path.exists():
                     task.file_size = output_path.stat().st_size
@@ -113,7 +113,7 @@ class RecorderService:
             except Exception as e:
                 task.status = TaskStatus.failed
                 task.error_message = str(e)
-                task.ended_at = datetime.utcnow()
+                task.ended_at = datetime.now()
                 await db.commit()
 
     @classmethod

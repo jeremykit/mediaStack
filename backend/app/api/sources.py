@@ -246,7 +246,7 @@ async def _broadcast_source_status(source_id: int, is_online: bool, attempt: int
             source = result.scalar_one_or_none()
             if source:
                 source.is_online = is_online
-                source.last_check_time = datetime.utcnow()
+                source.last_check_time = datetime.now()
                 await db.commit()
     except Exception as e:
         logger.error(f"Failed to update database for source {source_id}: {e}")
@@ -308,7 +308,7 @@ async def receive_provider_callback(
     for source in sources:
         old_status = source.is_online
         source.is_online = is_online
-        source.last_check_time = datetime.utcnow()
+        source.last_check_time = datetime.now()
         updated_count += 1
 
         logger.info(f"Updated source {source.id} ({source.name}): {old_status} -> {is_online}")

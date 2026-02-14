@@ -151,7 +151,7 @@ async def batch_publish_videos(
         video = videos.get(video_id)
         if video:
             video.status = VideoStatus.published
-            video.reviewed_at = datetime.utcnow()
+            video.reviewed_at = datetime.now()
             video.reviewed_by = current_user.id
             success_count += 1
         else:
@@ -181,7 +181,7 @@ async def batch_offline_videos(
         video = videos.get(video_id)
         if video:
             video.status = VideoStatus.offline
-            video.reviewed_at = datetime.utcnow()
+            video.reviewed_at = datetime.now()
             video.reviewed_by = current_user.id
             success_count += 1
         else:
@@ -321,7 +321,7 @@ async def publish_video(
         raise HTTPException(status_code=404, detail="Video not found")
 
     video.status = VideoStatus.published
-    video.reviewed_at = datetime.utcnow()
+    video.reviewed_at = datetime.now()
     video.reviewed_by = current_user.id
 
     await db.commit()
@@ -345,7 +345,7 @@ async def offline_video(
         raise HTTPException(status_code=404, detail="Video not found")
 
     video.status = VideoStatus.offline
-    video.reviewed_at = datetime.utcnow()
+    video.reviewed_at = datetime.now()
     video.reviewed_by = current_user.id
 
     await db.commit()
