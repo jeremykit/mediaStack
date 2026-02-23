@@ -133,14 +133,12 @@ async def get_audio_info(
 @router.get("/{video_id}/audio/download")
 async def download_audio(
     video_id: int,
-    db: AsyncSession = Depends(get_db),
-    current_user: Admin = Depends(get_current_user_optional)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Download extracted audio file.
 
-    - Public users: Can only download from published videos
-    - Logged-in users: Can download from any video
+    Public access - no authentication required.
     Returns the audio file for download.
     """
     # Check if video exists
@@ -150,10 +148,6 @@ async def download_audio(
     video = result.scalar_one_or_none()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-
-    # Public users can only access published videos
-    if current_user is None and video.status != "published":
-        raise HTTPException(status_code=401, detail="Login required")
 
     # Get completed task
     task = await AudioExtractorService.get_completed_task(video_id, db)
