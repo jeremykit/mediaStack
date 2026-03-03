@@ -25,10 +25,11 @@ dist/
 *.swp
 
 # Data
-data
+data/*
 
 
-backend/data/
+backend/data/db
+backend/data/videos
 
 # Logs
 *.log
