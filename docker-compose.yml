@@ -1,11 +1,10 @@
 services:
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
+    image: mediastack-nginx:latest
     ports:
       - "80:80"
     volumes:
+      - ./nginx/nginx.conf:/usr/local/nginx/conf/nginx.conf:ro
       - ./data/videos:/data/videos:ro
       - ./frontend/dist:/usr/share/nginx/html:ro
     depends_on:
@@ -13,10 +12,9 @@ services:
     restart: unless-stopped
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: mediastack-backend:latest
     volumes:
+      - ./backend:/app:ro
       - ./data:/app/data
     environment:
       - DEBUG=false

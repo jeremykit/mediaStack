@@ -1,6 +1,6 @@
 FROM alfg/nginx-vod-module:latest
 
-COPY nginx.conf /usr/local/nginx/conf/nginx.conf
+# 配置文件通过 volume 挂载，不再复制进镜像
 
 EXPOSE 80
 

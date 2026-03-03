@@ -1,0 +1,15 @@
+# 镜像构建配置
+# 使用方式: docker compose -f docker-compose.build.yml build
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: mediastack-backend:latest
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: mediastack-nginx:latest
