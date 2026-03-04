@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
     # Create thumbnails directory for video thumbnails
     (settings.storage_path / "thumbnails").mkdir(parents=True, exist_ok=True)
 
-    # Create database directory
+    # Create database directory BEFORE running migrations
     db_path = Path(settings.database_url.replace("sqlite+aiosqlite:///", ""))
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
