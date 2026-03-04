@@ -10,3 +10,6 @@ else
     echo "Using default vod_base_url from template"
     envsubst '$VOD_BASE_URL' < /usr/local/nginx/conf/nginx.conf.template > /usr/local/nginx/conf/nginx.conf
 fi
+
+# 执行 CMD 中的命令（启动 nginx）
+exec "$@"
