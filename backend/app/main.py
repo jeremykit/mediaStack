@@ -110,6 +110,7 @@ async def log_requests(request: Request, call_next):
 
 @app.get("/api/health")
 async def health_check():
+    logger.info("Health check called!")
     return {"status": "ok"}
 
 app.include_router(auth.router)
