@@ -4,9 +4,12 @@ services:
     expose:
       - 80
     volumes:
-      - ./nginx/nginx.conf:/usr/local/nginx/conf/nginx.conf:ro
+      - ./nginx/nginx.conf.template:/usr/local/nginx/conf/nginx.conf.template:ro
+      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/10-vod-base-url.sh:ro
       - ./data/videos:/data/videos:ro
       - ./frontend/dist:/usr/share/nginx/html:ro
+    environment:
+      - VOD_BASE_URL=${VOD_BASE_URL:-https://media.jidan.cool}
     depends_on:
       - mediastack-server
     restart: unless-stopped
