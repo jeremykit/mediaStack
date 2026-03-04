@@ -88,10 +88,11 @@ app.add_middleware(
 
 
 # Access log middleware
+# - Always logs errors (status >= 400)
+# - Logs all requests when ENABLE_ACCESS_LOG=true
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     import time
-    import sys
     start_time = time.time()
 
     # Get client IP from headers (proxied request)
@@ -99,19 +100,28 @@ async def log_requests(request: Request, call_next):
     if "," in client_ip:
         client_ip = client_ip.split(",")[0].strip()
 
-    print(f"REQUEST | {client_ip} | {request.method} {request.url.path}", flush=True)
-
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception as e:
+        # Log unhandled exceptions
+        process_time = time.time() - start_time
+        print(f"ERROR | {client_ip} | {request.method} {request.url.path} | {type(e).__name__}: {str(e)} | {process_time:.3f}s", flush=True)
+        raise
 
     process_time = time.time() - start_time
-    print(f"RESPONSE | {client_ip} | {request.method} {request.url.path} | {response.status_code} | {process_time:.3f}s", flush=True)
+
+    # Always log errors and warnings
+    if response.status_code >= 400:
+        print(f"ERROR | {client_ip} | {request.method} {request.url.path} | {response.status_code} | {process_time:.3f}s", flush=True)
+    # Log all requests if enabled
+    elif settings.enable_access_log:
+        print(f"ACCESS | {client_ip} | {request.method} {request.url.path} | {response.status_code} | {process_time:.3f}s", flush=True)
 
     return response
 
 
 @app.get("/api/health")
 async def health_check():
-    print("Health check called!", flush=True)
     return {"status": "ok"}
 
 app.include_router(auth.router)

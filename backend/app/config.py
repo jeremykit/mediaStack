@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     app_name: str = "MediaStack"
     debug: bool = False
 
+    # Logging
+    enable_access_log: bool = False  # Set to true to enable all request logging
+
     # Database
     database_url: str = "sqlite+aiosqlite:///./data/db/mediastack.db"
 
