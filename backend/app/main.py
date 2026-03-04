@@ -91,6 +91,7 @@ app.add_middleware(
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     import time
+    import sys
     start_time = time.time()
 
     # Get client IP from headers (proxied request)
@@ -98,19 +99,19 @@ async def log_requests(request: Request, call_next):
     if "," in client_ip:
         client_ip = client_ip.split(",")[0].strip()
 
-    logger.info(f"REQUEST | {client_ip} | {request.method} {request.url.path}")
+    print(f"REQUEST | {client_ip} | {request.method} {request.url.path}", flush=True)
 
     response = await call_next(request)
 
     process_time = time.time() - start_time
-    logger.info(f"RESPONSE | {client_ip} | {request.method} {request.url.path} | {response.status_code} | {process_time:.3f}s")
+    print(f"RESPONSE | {client_ip} | {request.method} {request.url.path} | {response.status_code} | {process_time:.3f}s", flush=True)
 
     return response
 
 
 @app.get("/api/health")
 async def health_check():
-    logger.info("Health check called!")
+    print("Health check called!", flush=True)
     return {"status": "ok"}
 
 app.include_router(auth.router)
