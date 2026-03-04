@@ -1,11 +1,11 @@
 services:
   mediastack:
     image: mediastack-nginx:latest
+    build: ./nginx
     expose:
       - 80
     volumes:
       - ./nginx/nginx.conf.template:/usr/local/nginx/conf/nginx.conf.template:ro
-      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.d/10-vod-base-url.sh:ro
       - ./data/videos:/data/videos:ro
       - ./frontend/dist:/usr/share/nginx/html:ro
     environment:
