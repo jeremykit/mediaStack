@@ -4,15 +4,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 import logging
 
-# Configure logging
-import sys
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(name)s | %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-    stream=sys.stdout,
-    force=True
-)
+# Logging is configured via logging.conf (uvicorn --log-config)
+# This allows access logs to be properly formatted and visible in docker logs
 
 from app.config import settings
 from app.database import init_db, async_session, ensure_default_category
