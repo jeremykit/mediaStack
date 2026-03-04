@@ -15,7 +15,7 @@ services:
 
   mediastack-server:
     image: mediastack-backend:latest
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --log-level info --access-log --log-config logging.conf
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --log-level info
     expose:
       - 8000
     volumes:

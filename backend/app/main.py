@@ -1,11 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pathlib import Path
 import logging
+import sys
 
-# Logging is configured via logging.conf (uvicorn --log-config)
-# This allows access logs to be properly formatted and visible in docker logs
+# Configure logging to stdout
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s | %(levelname)s | %(name)s | %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    stream=sys.stdout,
+)
 
 from app.config import settings
 from app.database import init_db, async_session, ensure_default_category
@@ -79,6 +85,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Access log middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    import time
+    start_time = time.time()
+
+    # Get client IP from headers (proxied request)
+    client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+    if "," in client_ip:
+        client_ip = client_ip.split(",")[0].strip()
+
+    logger.info(f"REQUEST | {client_ip} | {request.method} {request.url.path}")
+
+    response = await call_next(request)
+
+    process_time = time.time() - start_time
+    logger.info(f"RESPONSE | {client_ip} | {request.method} {request.url.path} | {response.status_code} | {process_time:.3f}s")
+
+    return response
 
 
 @app.get("/api/health")
