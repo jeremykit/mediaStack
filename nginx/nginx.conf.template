@@ -26,8 +26,8 @@ http {
     vod_segment_duration 9000;
     vod_align_segments_to_key_frames on;
     vod_manifest_segment_durations_mode accurate;
-    vod_base_url "${VOD_BASE_URL:-https://media.jidan.cool}";
-    vod_segments_base_url "${VOD_BASE_URL:-https://media.jidan.cool}";
+    vod_base_url "$VOD_BASE_URL";
+    vod_segments_base_url "$VOD_BASE_URL";
 
     open_file_cache max=1000 inactive=5m;
     open_file_cache_valid 2m;
