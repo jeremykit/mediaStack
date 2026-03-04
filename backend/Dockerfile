@@ -26,5 +26,4 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
 
 # 代码通过 volume 挂载，不再复制进镜像
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info", "--access-log", "--log-config", "logging.conf"]
+# 启动命令在 docker-compose.yml 中配置
