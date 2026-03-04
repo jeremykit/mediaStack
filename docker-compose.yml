@@ -10,6 +10,8 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      -jitsi-docker-jitsi-meet_meet.jitsi
 
   mediastack-Server:
     image: mediastack-backend:latest
@@ -25,3 +27,10 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
     restart: unless-stopped
+    networks:
+      -jitsi-docker-jitsi-meet_meet.jitsi
+
+
+networks:
+  jitsi-docker-jitsi-meet_meet.jitsi:
+    external: true # 关键：声明使用已存在的外部网络
