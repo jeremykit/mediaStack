@@ -8,12 +8,12 @@ services:
       - ./data/videos:/data/videos:ro
       - ./frontend/dist:/usr/share/nginx/html:ro
     depends_on:
-      - backend
+      - mediastack-server
     restart: unless-stopped
     networks:
-      -jitsi-docker-jitsi-meet_meet.jitsi
+      - jitsi-docker-jitsi-meet_meet.jitsi
 
-  mediastack-Server:
+  mediastack-server:
     image: mediastack-backend:latest
     volumes:
       - ./backend:/app:ro
@@ -28,7 +28,7 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
     restart: unless-stopped
     networks:
-      -jitsi-docker-jitsi-meet_meet.jitsi
+      - jitsi-docker-jitsi-meet_meet.jitsi
 
 
 networks:
