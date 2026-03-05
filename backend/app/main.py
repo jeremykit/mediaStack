@@ -15,7 +15,7 @@ logging.basicConfig(
 
 from app.config import settings
 from app.database import init_db, async_session, ensure_default_category
-from app.api import auth, sources, tasks, schedules, videos, system, categories, tags, view_codes, upload, video_extensions, audio, thumbnail, video_trim, websocket
+from app.api import auth, sources, tasks, schedules, videos, system, categories, tags, view_codes, upload, video_extensions, audio, thumbnail, video_trim, websocket, dashboard
 from app.services.scheduler import init_scheduler, shutdown_scheduler
 from app.services.status_monitor import status_monitor
 from app.init_admin import create_initial_admin
@@ -139,3 +139,4 @@ app.include_router(audio.router)
 app.include_router(thumbnail.router)
 app.include_router(video_trim.router)
 app.include_router(websocket.router)
+app.include_router(dashboard.router)
