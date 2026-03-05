@@ -74,13 +74,18 @@
       <!-- Dashboard Widgets -->
       <el-row :gutter="20" class="dashboard-widgets">
         <!-- Recording Status Card -->
-        <el-col :span="12">
+        <el-col :span="8">
           <RecordingCard :tasks="recordingTasks" />
         </el-col>
 
         <!-- Pending Video Card -->
-        <el-col :span="12">
+        <el-col :span="8">
           <PendingVideoCard :count="pendingVideoCount" />
+        </el-col>
+
+        <!-- System Resource Card -->
+        <el-col :span="8">
+          <SystemResourceCard :system="systemStats" />
         </el-col>
       </el-row>
     </div>
@@ -92,6 +97,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import RecordingCard from '@/components/dashboard/RecordingCard.vue'
 import PendingVideoCard from '@/components/dashboard/PendingVideoCard.vue'
+import SystemResourceCard from '@/components/dashboard/SystemResourceCard.vue'
 import { useDashboardStore } from '@/stores/dashboard'
 import type { RecordingTaskInfo } from '@/api/dashboard'
 
@@ -117,6 +123,15 @@ const recordingTasks = computed<RecordingTaskInfo[]>(() => {
 // Pending video count for PendingVideoCard
 const pendingVideoCount = computed<number>(() => {
   return dashboardStore.overview?.pending_video_count ?? 0
+})
+
+// System stats for SystemResourceCard
+const systemStats = computed(() => {
+  return dashboardStore.overview?.system ?? {
+    cpu_percent: 0,
+    memory_percent: 0,
+    disk_percent: 0
+  }
 })
 
 const refreshAll = async () => {
@@ -332,7 +347,7 @@ onUnmounted(() => {
     flex-direction: column;
   }
 
-  :deep(.el-col-12) {
+  :deep(.el-col-8) {
     width: 100% !important;
     max-width: 100%;
     flex: 0 0 100%;
