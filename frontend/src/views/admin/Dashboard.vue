@@ -111,6 +111,11 @@
         <el-col :span="8">
           <ScheduleCard :schedules="upcomingSchedules" />
         </el-col>
+
+        <!-- Traffic Card -->
+        <el-col :span="8">
+          <TrafficCard :traffic="trafficStats" />
+        </el-col>
       </el-row>
     </div>
   </div>
@@ -126,8 +131,9 @@ import ScheduleCard from '@/components/dashboard/ScheduleCard.vue'
 import StorageCard from '@/components/dashboard/StorageCard.vue'
 import SystemResourceCard from '@/components/dashboard/SystemResourceCard.vue'
 import SourceStatusCard from '@/components/dashboard/SourceStatusCard.vue'
+import TrafficCard from '@/components/dashboard/TrafficCard.vue'
 import { useDashboardStore } from '@/stores/dashboard'
-import type { RecordingTaskInfo, RecentTaskInfo, StorageStats } from '@/api/dashboard'
+import type { RecordingTaskInfo, RecentTaskInfo, StorageStats, TrafficStats } from '@/api/dashboard'
 
 const dashboardStore = useDashboardStore()
 const refreshing = ref(false)
@@ -199,6 +205,11 @@ const storageStats = computed<StorageStats>(() => {
     total_size: 0,
     by_category: []
   }
+})
+
+// Traffic stats for TrafficCard
+const trafficStats = computed<TrafficStats[]>(() => {
+  return dashboardStore.statistics?.traffic_by_period ?? []
 })
 
 const refreshAll = async () => {
