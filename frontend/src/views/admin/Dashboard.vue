@@ -94,6 +94,11 @@
         <el-col :span="8">
           <SystemResourceCard :system="systemStats" />
         </el-col>
+
+        <!-- Recent Activity Card -->
+        <el-col :span="16">
+          <RecentActivityCard :tasks="recentTasks" />
+        </el-col>
       </el-row>
     </div>
   </div>
@@ -104,10 +109,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import RecordingCard from '@/components/dashboard/RecordingCard.vue'
 import PendingVideoCard from '@/components/dashboard/PendingVideoCard.vue'
+import RecentActivityCard from '@/components/dashboard/RecentActivityCard.vue'
 import SystemResourceCard from '@/components/dashboard/SystemResourceCard.vue'
 import SourceStatusCard from '@/components/dashboard/SourceStatusCard.vue'
 import { useDashboardStore } from '@/stores/dashboard'
-import type { RecordingTaskInfo } from '@/api/dashboard'
+import type { RecordingTaskInfo, RecentTaskInfo } from '@/api/dashboard'
 
 const dashboardStore = useDashboardStore()
 const refreshing = ref(false)
@@ -150,6 +156,11 @@ const sourceStats = computed(() => {
     offline: 0,
     recording: 0
   }
+})
+
+// Recent tasks for RecentActivityCard
+const recentTasks = computed<RecentTaskInfo[]>(() => {
+  return dashboardStore.activity?.recent_tasks ?? []
 })
 
 const refreshAll = async () => {
