@@ -54,7 +54,7 @@ class StorageStats(BaseModel):
     by_category: List[CategoryStorageInfo]
 
 
-class TrafficPeriod(BaseModel):
+class TrafficStats(BaseModel):
     """Traffic statistics for a specific period."""
     period: Literal["today", "week", "month"]
     video_views: int
@@ -66,7 +66,7 @@ class TrafficPeriod(BaseModel):
 class DashboardStatistics(BaseModel):
     """Dashboard statistics API response."""
     storage: StorageStats
-    traffic_by_period: List[TrafficPeriod]
+    traffic_by_period: List[TrafficStats]
 
 
 # ============= Dashboard Activity Schemas =============
