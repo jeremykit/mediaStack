@@ -1,48 +1,24 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from typing import List
 from datetime import datetime
 
 from app.database import get_db
 from app.models import Admin, RecordTask, LiveSource, VideoFile, TaskStatus, VideoStatus
 from app.api.deps import get_current_user
 from app.config import settings
+from app.schemas.dashboard import (
+    DashboardOverview,
+    RecordingTaskInfo,
+    SourceStats,
+    SystemStats
+)
 import psutil
 
 router = APIRouter(prefix="/api/admin/dashboard", tags=["dashboard"])
 
 
-class RecordingTaskItem(BaseModel):
-    id: int
-    source_name: str
-    started_at: datetime
-    duration: int | None = None
-
-
-class SourcesStats(BaseModel):
-    total: int
-    online: int
-    offline: int
-    recording: int
-
-
-class SystemStats(BaseModel):
-    cpu_percent: float
-    memory_percent: float
-    disk_percent: float
-
-
-class DashboardOverviewResponse(BaseModel):
-    recording_tasks: List[RecordingTaskItem]
-    recording_count: int
-    pending_video_count: int
-    sources: SourcesStats
-    system: SystemStats
-
-
-@router.get("/overview", response_model=DashboardOverviewResponse)
+@router.get("/overview", response_model=DashboardOverview)
 async def get_overview(
     db: AsyncSession = Depends(get_db),
     current_user: Admin = Depends(get_current_user)
@@ -66,11 +42,11 @@ async def get_overview(
     # Calculate duration for each recording task
     recording_task_items = []
     for task, source in recording_tasks:
-        duration = None
+        duration = 0
         if task.started_at:
             duration = int((datetime.now() - task.started_at).total_seconds())
         recording_task_items.append(
-            RecordingTaskItem(
+            RecordingTaskInfo(
                 id=task.id,
                 source_name=source.name,
                 started_at=task.started_at,
@@ -98,7 +74,7 @@ async def get_overview(
     # Count recording sources (sources with active recording tasks)
     recording_count = len(recording_tasks)
 
-    sources_stats = SourcesStats(
+    sources_stats = SourceStats(
         total=total,
         online=online,
         offline=offline,
@@ -116,7 +92,7 @@ async def get_overview(
         disk_percent=disk.percent
     )
 
-    return DashboardOverviewResponse(
+    return DashboardOverview(
         recording_tasks=recording_task_items,
         recording_count=recording_count,
         pending_video_count=pending_video_count,
