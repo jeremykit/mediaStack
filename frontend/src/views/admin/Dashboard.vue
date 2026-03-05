@@ -96,8 +96,13 @@
         </el-col>
 
         <!-- Recent Activity Card -->
-        <el-col :span="16">
+        <el-col :span="8">
           <RecentActivityCard :tasks="recentTasks" />
+        </el-col>
+
+        <!-- Schedule Card -->
+        <el-col :span="8">
+          <ScheduleCard :schedules="upcomingSchedules" />
         </el-col>
       </el-row>
     </div>
@@ -110,6 +115,7 @@ import { ElMessage } from 'element-plus'
 import RecordingCard from '@/components/dashboard/RecordingCard.vue'
 import PendingVideoCard from '@/components/dashboard/PendingVideoCard.vue'
 import RecentActivityCard from '@/components/dashboard/RecentActivityCard.vue'
+import ScheduleCard from '@/components/dashboard/ScheduleCard.vue'
 import SystemResourceCard from '@/components/dashboard/SystemResourceCard.vue'
 import SourceStatusCard from '@/components/dashboard/SourceStatusCard.vue'
 import { useDashboardStore } from '@/stores/dashboard'
@@ -161,6 +167,11 @@ const sourceStats = computed(() => {
 // Recent tasks for RecentActivityCard
 const recentTasks = computed<RecentTaskInfo[]>(() => {
   return dashboardStore.activity?.recent_tasks ?? []
+})
+
+// Upcoming schedules for ScheduleCard
+const upcomingSchedules = computed(() => {
+  return dashboardStore.activity?.upcoming_schedules ?? []
 })
 
 const refreshAll = async () => {
