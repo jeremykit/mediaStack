@@ -8,7 +8,7 @@ from datetime import datetime
 import os
 
 from app.database import get_db
-from app.models import Admin, VideoFile, Tag, Category
+from app.models import Admin, VideoFile, Tag, Category, Download
 from app.models.video import VideoStatus, FileType
 from app.schemas.video import (
     VideoUpdate, VideoResponse, VideoPlayResponse,
@@ -503,3 +503,32 @@ async def stream_video(video_id: int, db: AsyncSession = Depends(get_db)):
         media_type=media_type,
         filename=filename,
     )
+
+
+@router.post("/{video_id}/download", status_code=status.HTTP_201_CREATED)
+async def record_download(
+    video_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[Admin] = Depends(get_current_user_optional)
+):
+    """Record a video download (public endpoint for published videos only)."""
+    # First check if video exists and get its status
+    video_result = await db.execute(select(VideoFile).where(VideoFile.id == video_id))
+    video = video_result.scalar_one_or_none()
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    # Public users can only download published videos
+    if current_user is None and video.status != VideoStatus.published:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Login required to download this video"
+        )
+
+    # Create download record
+    download = Download(video_id=video_id)
+    db.add(download)
+    await db.commit()
+
+    return {"message": "Download recorded", "video_id": video_id}
+
