@@ -2,8 +2,8 @@
   <div class="home-page">
     <!-- Hero Section -->
     <div class="hero-section">
+      <HeaderNav />
       <div class="hero-content">
-        <HeaderNav />
         <div class="brand-area">
           <div class="logo-circle">
             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -293,7 +293,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-top: 20px;
   margin-bottom: 40px;
   justify-content: center;
 }
