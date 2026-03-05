@@ -105,7 +105,7 @@
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="user-profile">
+        <div class="user-profile" @click="handleLogout">
           <div class="user-avatar">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" />
@@ -115,6 +115,13 @@
           <div class="user-info">
             <div class="user-name">Admin</div>
             <div class="user-role">管理员</div>
+          </div>
+          <div class="logout-sidebar-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="11" width="10" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M7 11V7C7 5.34315 8.34315 4 10 4H14C15.6569 4 17 5.34315 17 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M17 15L19 17M17 15V19M17 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -135,6 +142,14 @@
             </svg>
             <span class="home-text">首页</span>
           </router-link>
+          <button @click="handleLogout" class="logout-header-btn" title="登出">
+            <svg class="logout-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="11" width="10" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M7 11V7C7 5.34315 8.34315 4 10 4H14C15.6569 4 17 5.34315 17 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M17 15L19 17M17 15V19M17 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>登出</span>
+          </button>
           <SystemStatus />
         </div>
       </header>
@@ -159,11 +174,36 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, ref, type VNode } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, h, ref, type VNode, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessageBox, ElMessage } from 'element-plus'
+import { useAuthStore } from '../../stores/auth'
 import SystemStatus from '../../components/SystemStatus.vue'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+
+// Logout handler
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要登出吗？',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+    authStore.logout()
+    ElMessage.success('已登出')
+    // 管理后台登出后跳转到登录页
+    router.push('/login')
+  } catch {
+    // 用户取消
+  }
+}
 
 // Mobile sidebar state
 const sidebarOpen = ref(false)
@@ -177,7 +217,6 @@ const closeSidebar = () => {
 }
 
 // Close sidebar when route changes on mobile
-import { watch } from 'vue'
 watch(() => route.path, () => {
   if (window.innerWidth < 768) {
     closeSidebar()
@@ -569,6 +608,26 @@ const currentPageTitle = computed(() => {
 .user-info {
   flex: 1;
 }
+.logout-sidebar-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(233, 69, 96, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #E94560;
+  transition: all 0.3s ease;
+}
+
+.user-profile:hover .logout-sidebar-icon {
+  background: rgba(233, 69, 96, 0.2);
+}
+
+.logout-sidebar-icon svg {
+  width: 16px;
+  height: 16px;
+}
 
 .user-name {
   font-size: 14px;
@@ -653,6 +712,32 @@ const currentPageTitle = computed(() => {
 
 .home-text {
   font-size: 14px;
+}
+
+.logout-header-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(233, 69, 96, 0.1);
+  border: 1px solid rgba(233, 69, 96, 0.3);
+  border-radius: 8px;
+  color: #E94560;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.logout-header-btn:hover {
+  background: rgba(233, 69, 96, 0.2);
+  border-color: rgba(233, 69, 96, 0.5);
+  transform: translateY(-1px);
+}
+
+.logout-icon {
+  width: 18px;
+  height: 18px;
 }
 
 /* Page Content */
@@ -837,6 +922,7 @@ const currentPageTitle = computed(() => {
 
   .user-avatar {
     width: 32px;
+.logout-sidebar-icon {    width: 28px;    height: 28px;  }  .logout-sidebar-icon svg {    width: 14px;    height: 14px;  }
     height: 32px;
   }
 
@@ -850,6 +936,19 @@ const currentPageTitle = computed(() => {
   }
 
   .home-link-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .logout-header-btn span {
+    display: none;
+  }
+
+  .logout-header-btn {
+    padding: 8px;
+  }
+
+  .logout-icon {
     width: 20px;
     height: 20px;
   }

@@ -26,15 +26,30 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessageBox, ElMessage } from 'element-plus'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const handleLogout = () => {
-  authStore.logout()
-  ElMessage.success('已登出')
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要登出吗？',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+    authStore.logout()
+    ElMessage.success('已登出')
+    // 刷新当前页面以更新UI状态
+    router.go(0)
+  } catch {
+    // 用户点击取消，什么都不做
+  }
 }
 </script>
 
