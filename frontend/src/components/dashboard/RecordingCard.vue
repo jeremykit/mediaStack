@@ -50,22 +50,16 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-
-interface RecordingTask {
-  id: number
-  source_name: string
-  started_at: string
-  duration: number
-}
+import type { RecordingTaskInfo } from '@/api/dashboard'
 
 interface Props {
-  tasks: RecordingTask[]
+  tasks: RecordingTaskInfo[]
 }
 
 const props = defineProps<Props>()
 const router = useRouter()
-const localTasks = ref<RecordingTask[]>([...props.tasks])
-let durationTimer: ReturnType<typeof setInterval> | null = null
+const now = ref(Date.now())
+let timer: ReturnType<typeof setInterval> | null = null
 
 const formatStartTime = (dateString: string): string => {
   const date = new Date(dateString)
@@ -85,29 +79,38 @@ const formatDuration = (seconds: number): string => {
   return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
+// Calculate current duration based on started_at time
+const getCurrentDuration = (startedAt: string, baseDuration: number): number => {
+  const startTime = new Date(startedAt).getTime()
+  const elapsed = Math.floor((now.value - startTime) / 1000)
+  return Math.max(0, baseDuration + elapsed)
+}
+
+// Compute tasks with real-time duration
+const tasks = computed(() => {
+  return props.tasks.map(task => ({
+    ...task,
+    duration: getCurrentDuration(task.started_at, task.duration)
+  }))
+})
+
 const navigateToTasks = () => {
   router.push('/admin/tasks')
 }
 
 onMounted(() => {
-  // Update duration every second
-  durationTimer = setInterval(() => {
-    localTasks.value = localTasks.value.map(task => ({
-      ...task,
-      duration: task.duration + 1
-    }))
+  // Update current time every second to trigger duration recalculation
+  timer = setInterval(() => {
+    now.value = Date.now()
   }, 1000)
 })
 
 onUnmounted(() => {
-  if (durationTimer) {
-    clearInterval(durationTimer)
-    durationTimer = null
+  if (timer) {
+    clearInterval(timer)
+    timer = null
   }
 })
-
-// Sync with props changes
-const tasks = computed(() => props.tasks.length > 0 ? props.tasks : localTasks.value)
 </script>
 
 <style scoped>
