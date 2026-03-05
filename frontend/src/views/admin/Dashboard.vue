@@ -73,6 +73,11 @@
 
       <!-- Dashboard Widgets -->
       <el-row :gutter="20" class="dashboard-widgets">
+        <!-- Source Status Card -->
+        <el-col :span="8">
+          <SourceStatusCard :sources="sourceStats" />
+        </el-col>
+
         <!-- Recording Status Card -->
         <el-col :span="8">
           <RecordingCard :tasks="recordingTasks" />
@@ -82,7 +87,9 @@
         <el-col :span="8">
           <PendingVideoCard :count="pendingVideoCount" />
         </el-col>
+      </el-row>
 
+      <el-row :gutter="20" class="dashboard-widgets">
         <!-- System Resource Card -->
         <el-col :span="8">
           <SystemResourceCard :system="systemStats" />
@@ -98,6 +105,7 @@ import { ElMessage } from 'element-plus'
 import RecordingCard from '@/components/dashboard/RecordingCard.vue'
 import PendingVideoCard from '@/components/dashboard/PendingVideoCard.vue'
 import SystemResourceCard from '@/components/dashboard/SystemResourceCard.vue'
+import SourceStatusCard from '@/components/dashboard/SourceStatusCard.vue'
 import { useDashboardStore } from '@/stores/dashboard'
 import type { RecordingTaskInfo } from '@/api/dashboard'
 
@@ -131,6 +139,16 @@ const systemStats = computed(() => {
     cpu_percent: 0,
     memory_percent: 0,
     disk_percent: 0
+  }
+})
+
+// Source stats for SourceStatusCard
+const sourceStats = computed(() => {
+  return dashboardStore.overview?.sources ?? {
+    total: 0,
+    online: 0,
+    offline: 0,
+    recording: 0
   }
 })
 
