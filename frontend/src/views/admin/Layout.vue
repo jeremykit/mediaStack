@@ -60,6 +60,20 @@
       <!-- Navigation Menu -->
       <nav class="nav-menu">
         <div class="nav-section">
+          <div class="nav-section-title">概览</div>
+          <router-link
+            v-for="item in generalMenuItems"
+            :key="item.path"
+            :to="item.path"
+            class="nav-item"
+            :class="{ active: route.path === item.path }"
+          >
+            <component :is="item.icon" class="nav-icon" />
+            <span class="nav-label">{{ item.label }}</span>
+          </router-link>
+        </div>
+
+        <div class="nav-section">
           <div class="nav-section-title">录制控制</div>
           <router-link
             v-for="item in recordingMenuItems"
@@ -283,7 +297,18 @@ const IconChart = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', xmlns: 'h
   h('path', { d: 'M7 14L11 10L15 14L21 8', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
 ])
 
+const IconDashboard = () => h('svg', { viewBox: '0 0 24 24', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }, [
+  h('rect', { x: '3', y: '3', width: '7', height: '7', rx: '1', stroke: 'currentColor', 'stroke-width': '2' }),
+  h('rect', { x: '3', y: '14', width: '7', height: '7', rx: '1', stroke: 'currentColor', 'stroke-width': '2' }),
+  h('rect', { x: '14', y: '3', width: '7', height: '7', rx: '1', stroke: 'currentColor', 'stroke-width': '2' }),
+  h('path', { d: 'M14 14L21 14L21 21L14 21Z', stroke: 'currentColor', 'stroke-width': '2' })
+])
+
 // Menu Items
+const generalMenuItems: MenuItem[] = [
+  { path: '/admin/dashboard', label: '仪表盘', icon: IconDashboard }
+]
+
 const recordingMenuItems: MenuItem[] = [
   { path: '/admin/sources', label: '直播源管理', icon: IconBroadcast },
   { path: '/admin/tasks', label: '录制任务', icon: IconRecord },
@@ -304,7 +329,7 @@ const systemMenuItems: MenuItem[] = [
 ]
 
 const currentPageTitle = computed(() => {
-  const allItems = [...recordingMenuItems, ...contentMenuItems, ...systemMenuItems]
+  const allItems = [...generalMenuItems, ...recordingMenuItems, ...contentMenuItems, ...systemMenuItems]
   const current = allItems.find(item => item.path === route.path)
   return current?.label || 'MediaStack'
 })

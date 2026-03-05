@@ -27,7 +27,9 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('../views/admin/Layout.vue'),
+      redirect: '/admin/dashboard',
       children: [
+        { path: 'dashboard', name: 'admin-dashboard', component: () => import('../views/admin/Dashboard.vue') },
         { path: 'sources', name: 'admin-sources', component: () => import('../views/admin/Sources.vue') },
         { path: 'tasks', name: 'admin-tasks', component: () => import('../views/admin/Tasks.vue') },
         { path: 'schedules', name: 'admin-schedules', component: () => import('../views/admin/Schedules.vue') },
