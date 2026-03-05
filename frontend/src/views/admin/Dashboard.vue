@@ -71,46 +71,72 @@
         </el-col>
       </el-row>
 
-      <!-- Placeholder for additional dashboard widgets -->
+      <!-- Dashboard Widgets -->
       <div class="dashboard-widgets">
-        <div class="widget-placeholder">
-          <p>仪表盘组件占位符</p>
-          <p class="hint">后续将添加图表、最近活动、快捷操作等组件</p>
-        </div>
+        <!-- Recording Status Card -->
+        <el-col :span="12">
+          <RecordingCard :tasks="recordingTasks" />
+        </el-col>
+
+        <!-- Placeholder for additional widgets -->
+        <el-col :span="12">
+          <div class="widget-placeholder">
+            <p>更多组件即将推出</p>
+            <p class="hint">最近活动、系统监控等</p>
+          </div>
+        </el-col>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import RecordingCard from '@/components/dashboard/RecordingCard.vue'
+import { useDashboardStore } from '@/stores/dashboard'
+import type { RecordingTaskInfo } from '@/api/dashboard'
 
+const dashboardStore = useDashboardStore()
 const refreshing = ref(false)
 
-// Stats data (placeholder - will be fetched from API)
-const stats = ref({
-  sources: 0,
-  activeTasks: 0,
-  videos: 0,
-  storageUsed: '0 GB'
+// Computed stats from dashboard store
+const stats = computed(() => {
+  const overview = dashboardStore.overview
+  return {
+    sources: overview?.sources.total ?? 0,
+    activeTasks: overview?.recording_count ?? 0,
+    videos: overview?.pending_video_count ?? 0,
+    storageUsed: '0 GB' // Will be updated from statistics API
+  }
+})
+
+// Recording tasks for RecordingCard
+const recordingTasks = computed<RecordingTaskInfo[]>(() => {
+  return dashboardStore.overview?.recording_tasks ?? []
 })
 
 const refreshAll = async () => {
   refreshing.value = true
-  // Simulate refresh - will be replaced with actual API calls
-  setTimeout(() => {
-    refreshing.value = false
+  try {
+    await dashboardStore.refreshAll()
     ElMessage.success('刷新成功')
-  }, 1000)
+  } catch (error) {
+    ElMessage.error('刷新失败')
+  } finally {
+    refreshing.value = false
+  }
 }
 
 let refreshTimer: ReturnType<typeof setInterval> | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  // Initial data fetch
+  await refreshAll()
+
   // Auto refresh every 30 seconds
   refreshTimer = setInterval(() => {
-    // Will be replaced with actual data fetching
+    dashboardStore.fetchOverview()
   }, 30000)
 })
 
@@ -255,15 +281,14 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Widget Placeholder */
+/* Dashboard Widgets */
 .dashboard-widgets {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
   gap: 20px;
 }
 
 .widget-placeholder {
-  grid-column: 1 / -1;
+  flex: 1;
   padding: 60px 20px;
   background: rgba(15, 20, 35, 0.4);
   border: 2px dashed rgba(255, 255, 255, 0.1);
@@ -322,7 +347,13 @@ onUnmounted(() => {
   }
 
   .dashboard-widgets {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  :deep(.el-col-12) {
+    width: 100% !important;
+    max-width: 100%;
+    flex: 0 0 100%;
   }
 
   .widget-placeholder {
