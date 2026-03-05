@@ -3,6 +3,7 @@
     <!-- Hero Section -->
     <div class="hero-section">
       <div class="hero-content">
+        <HeaderNav />
         <div class="brand-area">
           <div class="logo-circle">
             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -189,6 +190,7 @@ import { categoriesApi, type Category } from '../api/categories'
 import { tagsApi, type Tag } from '../api/tags'
 import { useAuthStore } from '../stores/auth'
 import VideoCard from '../components/VideoCard.vue'
+import HeaderNav from '../components/HeaderNav.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -291,6 +293,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 20px;
+  margin-top: 20px;
   margin-bottom: 40px;
   justify-content: center;
 }

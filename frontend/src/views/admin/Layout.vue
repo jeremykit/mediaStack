@@ -128,6 +128,13 @@
           <h2 class="page-title">{{ currentPageTitle }}</h2>
         </div>
         <div class="header-right">
+          <router-link to="/" class="home-link-btn" title="返回首页">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="home-text">首页</span>
+          </router-link>
           <SystemStatus />
         </div>
       </header>
@@ -618,6 +625,36 @@ const currentPageTitle = computed(() => {
   gap: 16px;
 }
 
+.home-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.home-link-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(233, 69, 96, 0.3);
+  color: white;
+}
+
+.home-link-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.home-text {
+  font-size: 14px;
+}
+
 /* Page Content */
 .page-content {
   flex: 1;
@@ -801,6 +838,20 @@ const currentPageTitle = computed(() => {
   .user-avatar {
     width: 32px;
     height: 32px;
+  }
+
+  /* Home link button mobile adjustments */
+  .home-text {
+    display: none;
+  }
+
+  .home-link-btn {
+    padding: 8px;
+  }
+
+  .home-link-btn svg {
+    width: 20px;
+    height: 20px;
   }
 }
 

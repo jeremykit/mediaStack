@@ -66,6 +66,11 @@
         </el-form-item>
       </el-form>
 
+      <!-- Back to Home -->
+      <router-link to="/" class="back-to-home-btn">
+        返回首页
+      </router-link>
+
       <!-- Status Indicator -->
       <div class="status-indicator">
         <span class="pulse-dot"></span>
@@ -281,6 +286,46 @@ const handleLogin = async () => {
 
 .login-button:active {
   transform: translateY(0);
+}
+
+/* Back to Home Button */
+.back-to-home-btn {
+  display: block;
+  width: 100%;
+  height: 48px;
+  line-height: 44px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  margin-top: 16px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-family: var(--font-sans);
+}
+
+.back-to-home-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.back-to-home-btn:active {
+  transform: translateY(0);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .back-to-home-btn {
+    height: 44px;
+    line-height: 40px;
+    font-size: 14px;
+    margin-top: 12px;
+  }
 }
 
 /* Status Indicator */
