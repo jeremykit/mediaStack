@@ -72,20 +72,17 @@
       </el-row>
 
       <!-- Dashboard Widgets -->
-      <div class="dashboard-widgets">
+      <el-row :gutter="20" class="dashboard-widgets">
         <!-- Recording Status Card -->
         <el-col :span="12">
           <RecordingCard :tasks="recordingTasks" />
         </el-col>
 
-        <!-- Placeholder for additional widgets -->
+        <!-- Pending Video Card -->
         <el-col :span="12">
-          <div class="widget-placeholder">
-            <p>更多组件即将推出</p>
-            <p class="hint">最近活动、系统监控等</p>
-          </div>
+          <PendingVideoCard :count="pendingVideoCount" />
         </el-col>
-      </div>
+      </el-row>
     </div>
   </div>
 </template>
@@ -94,6 +91,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import RecordingCard from '@/components/dashboard/RecordingCard.vue'
+import PendingVideoCard from '@/components/dashboard/PendingVideoCard.vue'
 import { useDashboardStore } from '@/stores/dashboard'
 import type { RecordingTaskInfo } from '@/api/dashboard'
 
@@ -114,6 +112,11 @@ const stats = computed(() => {
 // Recording tasks for RecordingCard
 const recordingTasks = computed<RecordingTaskInfo[]>(() => {
   return dashboardStore.overview?.recording_tasks ?? []
+})
+
+// Pending video count for PendingVideoCard
+const pendingVideoCount = computed<number>(() => {
+  return dashboardStore.overview?.pending_video_count ?? 0
 })
 
 const refreshAll = async () => {
@@ -287,27 +290,6 @@ onUnmounted(() => {
   gap: 20px;
 }
 
-.widget-placeholder {
-  flex: 1;
-  padding: 60px 20px;
-  background: rgba(15, 20, 35, 0.4);
-  border: 2px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.widget-placeholder p {
-  margin: 0;
-  font-size: 16px;
-}
-
-.widget-placeholder .hint {
-  font-size: 14px;
-  margin-top: 8px;
-  color: rgba(255, 255, 255, 0.2);
-}
-
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .dashboard-header {
@@ -354,10 +336,6 @@ onUnmounted(() => {
     width: 100% !important;
     max-width: 100%;
     flex: 0 0 100%;
-  }
-
-  .widget-placeholder {
-    padding: 40px 20px;
   }
 }
 </style>
