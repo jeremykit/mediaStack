@@ -170,6 +170,20 @@ async def get_statistics(
 
     # Helper function to get traffic for a period
     async def get_traffic_for_period(start_date: datetime, period_label: str) -> TrafficStats:
+        # NOTE: Traffic Statistics Implementation Design
+        # ---------------------------------------------
+        # This implementation counts cumulative views of videos/audio created
+        # within the time period. It does NOT track actual access events during the period.
+        #
+        # Example: If a video was created today and viewed 100 times tomorrow,
+        # those 100 views are still counted toward "today" stats because the video
+        # was created today. This is a simplified approach that avoids creating
+        # a separate access/visit log table.
+        #
+        # To track actual traffic within a time period (when views/downloads occur),
+        # a new access_records table would be needed to log each view/download event
+        # with a timestamp. This is beyond the current scope.
+
         # Count video views (videos created in period, sum view_count)
         video_views_result = await db.execute(
             select(func.sum(VideoFile.view_count)).where(
@@ -271,6 +285,13 @@ async def get_activity(
 
     sched = get_scheduler()
     upcoming_schedule_items = []
+
+    # If scheduler is not available, return empty upcoming schedules
+    if sched is None:
+        return DashboardActivity(
+            recent_tasks=recent_task_items,
+            upcoming_schedules=[]
+        )
 
     for schedule, source in schedules:
         # Get next run time from scheduler
