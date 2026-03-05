@@ -95,11 +95,18 @@
           <SystemResourceCard :system="systemStats" />
         </el-col>
 
+        <!-- Storage Card -->
+        <el-col :span="8">
+          <StorageCard :storage="storageStats" />
+        </el-col>
+
         <!-- Recent Activity Card -->
         <el-col :span="8">
           <RecentActivityCard :tasks="recentTasks" />
         </el-col>
+      </el-row>
 
+      <el-row :gutter="20" class="dashboard-widgets">
         <!-- Schedule Card -->
         <el-col :span="8">
           <ScheduleCard :schedules="upcomingSchedules" />
@@ -116,13 +123,24 @@ import RecordingCard from '@/components/dashboard/RecordingCard.vue'
 import PendingVideoCard from '@/components/dashboard/PendingVideoCard.vue'
 import RecentActivityCard from '@/components/dashboard/RecentActivityCard.vue'
 import ScheduleCard from '@/components/dashboard/ScheduleCard.vue'
+import StorageCard from '@/components/dashboard/StorageCard.vue'
 import SystemResourceCard from '@/components/dashboard/SystemResourceCard.vue'
 import SourceStatusCard from '@/components/dashboard/SourceStatusCard.vue'
 import { useDashboardStore } from '@/stores/dashboard'
-import type { RecordingTaskInfo, RecentTaskInfo } from '@/api/dashboard'
+import type { RecordingTaskInfo, RecentTaskInfo, StorageStats } from '@/api/dashboard'
 
 const dashboardStore = useDashboardStore()
 const refreshing = ref(false)
+
+// Format bytes to human readable size
+const formatSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const k = 1024
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const value = bytes / Math.pow(k, i)
+  return `${value.toFixed(i > 0 ? 1 : 0)} ${units[i]}`
+}
 
 // Computed stats from dashboard store
 const stats = computed(() => {
@@ -131,7 +149,7 @@ const stats = computed(() => {
     sources: overview?.sources.total ?? 0,
     activeTasks: overview?.recording_count ?? 0,
     videos: overview?.pending_video_count ?? 0,
-    storageUsed: '0 GB' // Will be updated from statistics API
+    storageUsed: formatSize(dashboardStore.statistics?.storage.total_size ?? 0)
   }
 })
 
@@ -172,6 +190,15 @@ const recentTasks = computed<RecentTaskInfo[]>(() => {
 // Upcoming schedules for ScheduleCard
 const upcomingSchedules = computed(() => {
   return dashboardStore.activity?.upcoming_schedules ?? []
+})
+
+// Storage stats for StorageCard
+const storageStats = computed<StorageStats>(() => {
+  return dashboardStore.statistics?.storage ?? {
+    total_files: 0,
+    total_size: 0,
+    by_category: []
+  }
 })
 
 const refreshAll = async () => {
