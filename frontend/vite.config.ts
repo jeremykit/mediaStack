@@ -7,8 +7,9 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://ser237.hiwords.net:80',
-        changeOrigin: true
+        target: 'https://media.jidan.cool',
+        changeOrigin: true,
+        secure: false
       }
     }
   }
