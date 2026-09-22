@@ -18,6 +18,9 @@ http {
     tcp_nopush on;
     tcp_nodelay on;
 
+    # 允许上传大文件（前端分片上传每个 chunk 为 5MB，这里设置足够余量）
+    client_max_body_size 20m;
+
     # 全局 vod 设置（使用默认值）
     vod_mode local;
     vod_metadata_cache metadata_cache 16m;
